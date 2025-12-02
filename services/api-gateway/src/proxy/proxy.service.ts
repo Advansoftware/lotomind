@@ -12,29 +12,31 @@ export class ProxyService {
     res: Response,
     targetUrl: string,
     pathPrefix: string,
+    keepPrefix: boolean = false,
   ) {
     try {
-      // Remove the prefix from the path
-      let path = req.url;
+      let path = req.path;
 
       // Handle /api prefix if present
       if (path.startsWith('/api')) {
         path = path.replace('/api', '');
       }
 
-      // Remove the service prefix (e.g. /lottery)
-      if (path.startsWith(pathPrefix)) {
-        path = path.replace(pathPrefix, '');
+      // Remove the service prefix (e.g. /lottery) unless keepPrefix is true
+      if (!keepPrefix && path.startsWith(pathPrefix)) {
+        path = path.substring(pathPrefix.length);
       }
 
       // Ensure path starts with /
-      if (!path.startsWith('/')) {
+      if (!path) {
+        path = '/';
+      } else if (!path.startsWith('/')) {
         path = '/' + path;
       }
 
       const url = `${targetUrl}${path}`;
 
-      console.log(`[Proxy] ${req.method} ${req.url} -> ${url}`);
+      console.log(`[Proxy] ${req.method} ${req.path} -> ${url}`);
 
       // Forward the request
       const response = await firstValueFrom(
