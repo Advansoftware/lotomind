@@ -11,22 +11,28 @@ import {
   Chip,
   Divider,
   useTheme,
+  Tabs,
+  Tab,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { LotteryCard } from "@/components/LotteryCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import { DashboardMetrics } from "@/components/DashboardMetrics";
+import { ValidationDashboard } from "@/components/ValidationDashboard";
 import { api } from "@/lib/api";
 import { getLotteryTheme, getLotteryConfig } from "@/lib/lottery-config";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import ScienceIcon from "@mui/icons-material/Science";
 import { useSearchParams } from "next/navigation";
 
-export default function Home() {
+function HomeContent() {
   const [loading, setLoading] = useState(true);
   const [latestDraws, setLatestDraws] = useState<any[]>([]);
   const [predictions, setPredictions] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState(0);
   const theme = useTheme();
   const searchParams = useSearchParams();
   const lotteryType = searchParams.get("lotteryType") || "megasena";
@@ -218,100 +224,87 @@ export default function Home() {
 
       <Container maxWidth="xl">
         {/* Dashboard Metrics - Floating Cards */}
-        <Box sx={{ mt: -6, mb: 6, position: "relative", zIndex: 2 }}>
+        <Box sx={{ mt: -6, mb: 4, position: "relative", zIndex: 2 }}>
           <DashboardMetrics
             lotteryType={lotteryType}
             lotteryTheme={lotteryTheme}
           />
         </Box>
 
-        {/* Main Content */}
-        <Grid container spacing={4}>
-          {/* Latest Draws Column */}
-          <Grid item xs={12} lg={4}>
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mb={3}
-            >
-              <Typography variant="h5" fontWeight="bold" color="text.primary">
-                📊 Últimos Sorteios
-              </Typography>
-              <Button
-                startIcon={<RefreshIcon />}
-                size="small"
-                onClick={loadData}
-                sx={{ color: lotteryTheme.colors.primary }}
-              >
-                Atualizar
-              </Button>
-            </Box>
-            <Box display="flex" flexDirection="column" gap={3}>
-              {latestDraws.length > 0 ? (
-                latestDraws.map((draw) => (
-                  <LotteryCard
-                    key={draw.id}
-                    draw={draw}
-                    lotteryTheme={lotteryTheme}
-                  />
-                ))
-              ) : (
-                <Paper
-                  sx={{
-                    p: 4,
-                    textAlign: "center",
-                    borderRadius: 4,
-                    bgcolor: "background.paper",
-                  }}
-                >
-                  <Typography color="text.secondary">
-                    Nenhum sorteio encontrado. Clique em "Sincronizar Tudo" para
-                    carregar os dados.
-                  </Typography>
-                </Paper>
-              )}
-            </Box>
-          </Grid>
+        {/* Tab Navigation */}
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            borderRadius: 3,
+            bgcolor: "background.paper",
+            border: "1px solid rgba(255,255,255,0.05)",
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => setActiveTab(v)}
+            sx={{
+              "& .MuiTab-root": {
+                fontWeight: "bold",
+                textTransform: "none",
+                minHeight: 64,
+              },
+              "& .Mui-selected": {
+                color: `${lotteryTheme.colors.primary} !important`,
+              },
+              "& .MuiTabs-indicator": {
+                bgcolor: lotteryTheme.colors.primary,
+              },
+            }}
+          >
+            <Tab
+              icon={<DashboardIcon />}
+              iconPosition="start"
+              label="Dashboard"
+            />
+            <Tab
+              icon={<ScienceIcon />}
+              iconPosition="start"
+              label="Validação & Análise"
+            />
+          </Tabs>
+        </Paper>
 
-          {/* Predictions Column */}
-          <Grid item xs={12} lg={8}>
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mb={3}
-            >
-              <Typography variant="h5" fontWeight="bold" color="text.primary">
-                🔮 Predições Ativas
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{
-                  borderColor: lotteryTheme.colors.primary,
-                  color: lotteryTheme.colors.primary,
-                  "&:hover": {
-                    borderColor: lotteryTheme.colors.dark,
-                    bgcolor: `${lotteryTheme.colors.primary}10`,
-                  },
-                }}
+        {/* Tab Content */}
+        {activeTab === 0 ? (
+          // Dashboard Tab
+          <Grid container spacing={4}>
+            {/* Latest Draws Column */}
+            <Grid item xs={12} lg={4}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={3}
               >
-                Ver Todas
-              </Button>
-            </Box>
-            <Grid container spacing={3}>
-              {predictions.length > 0 ? (
-                predictions.map((prediction) => (
-                  <Grid item xs={12} md={6} key={prediction.id}>
-                    <PredictionCard
-                      prediction={prediction}
+                <Typography variant="h5" fontWeight="bold" color="text.primary">
+                  📊 Últimos Sorteios
+                </Typography>
+                <Button
+                  startIcon={<RefreshIcon />}
+                  size="small"
+                  onClick={loadData}
+                  sx={{ color: lotteryTheme.colors.primary }}
+                >
+                  Atualizar
+                </Button>
+              </Box>
+              <Box display="flex" flexDirection="column" gap={3}>
+                {latestDraws.length > 0 ? (
+                  latestDraws.map((draw) => (
+                    <LotteryCard
+                      key={draw.id}
+                      draw={draw}
                       lotteryTheme={lotteryTheme}
                     />
-                  </Grid>
-                ))
-              ) : (
-                <Grid item xs={12}>
+                  ))
+                ) : (
                   <Paper
                     sx={{
                       p: 4,
@@ -321,16 +314,102 @@ export default function Home() {
                     }}
                   >
                     <Typography color="text.secondary">
-                      Nenhuma predição ativa. Clique em "Gerar Nova Predição"
-                      para começar.
+                      Nenhum sorteio encontrado. Clique em "Sincronizar Tudo"
+                      para carregar os dados.
                     </Typography>
                   </Paper>
-                </Grid>
-              )}
+                )}
+              </Box>
+            </Grid>
+
+            {/* Predictions Column */}
+            <Grid item xs={12} lg={8}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={3}
+              >
+                <Typography variant="h5" fontWeight="bold" color="text.primary">
+                  🔮 Predições Ativas
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    borderColor: lotteryTheme.colors.primary,
+                    color: lotteryTheme.colors.primary,
+                    "&:hover": {
+                      borderColor: lotteryTheme.colors.dark,
+                      bgcolor: `${lotteryTheme.colors.primary}10`,
+                    },
+                  }}
+                >
+                  Ver Todas
+                </Button>
+              </Box>
+              <Grid container spacing={3}>
+                {predictions.length > 0 ? (
+                  predictions.map((prediction) => (
+                    <Grid item xs={12} md={6} key={prediction.id}>
+                      <PredictionCard
+                        prediction={prediction}
+                        lotteryTheme={lotteryTheme}
+                      />
+                    </Grid>
+                  ))
+                ) : (
+                  <Grid item xs={12}>
+                    <Paper
+                      sx={{
+                        p: 4,
+                        textAlign: "center",
+                        borderRadius: 4,
+                        bgcolor: "background.paper",
+                      }}
+                    >
+                      <Typography color="text.secondary">
+                        Nenhuma predição ativa. Clique em "Gerar Nova Predição"
+                        para começar.
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                )}
+              </Grid>
             </Grid>
           </Grid>
-        </Grid>
+        ) : (
+          // Validation Tab
+          <ValidationDashboard
+            lotteryType={lotteryType}
+            lotteryTheme={{
+              primary: lotteryTheme.colors.primary,
+              secondary: lotteryTheme.colors.dark,
+              gradient: lotteryTheme.colors.gradient,
+            }}
+          />
+        )}
       </Container>
     </Box>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+          bgcolor="background.default"
+        >
+          <CircularProgress size={60} thickness={4} />
+        </Box>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

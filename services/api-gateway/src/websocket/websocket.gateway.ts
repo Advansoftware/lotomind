@@ -94,6 +94,49 @@ export class WebsocketGateway implements OnGatewayConnection, OnGatewayDisconnec
     });
   }
 
+  // Broadcast validation progress
+  broadcastValidationProgress(jobId: number, progress: any) {
+    this.logger.log(`Broadcasting validation progress: Job ${jobId}`);
+    this.server.to(`validation:${jobId}`).emit('validationProgress', {
+      jobId,
+      ...progress,
+    });
+    // Also broadcast to general validation channel
+    this.server.to('validation').emit('validationProgress', {
+      jobId,
+      ...progress,
+    });
+  }
+
+  // Broadcast validation complete
+  broadcastValidationComplete(jobId: number, results: any) {
+    this.logger.log(`Broadcasting validation complete: Job ${jobId}`);
+    this.server.to(`validation:${jobId}`).emit('validationComplete', {
+      jobId,
+      results,
+    });
+    this.server.to('validation').emit('validationComplete', {
+      jobId,
+      results,
+    });
+  }
+
+  // Broadcast significant hit (4+ matches)
+  broadcastSignificantHit(lotteryType: string, hit: {
+    jobId: number;
+    concurso: number;
+    strategyName: string;
+    hits: number;
+    predictedNumbers: number[];
+    matchedNumbers: number[];
+  }) {
+    this.logger.log(`Broadcasting significant hit: ${hit.strategyName} got ${hit.hits} hits on concurso ${hit.concurso}`);
+    this.server.emit('significantHit', {
+      lotteryType,
+      ...hit,
+    });
+  }
+
   // Send message to specific client
   sendToClient(clientId: string, event: string, data: any) {
     const client = this.connectedClients.get(clientId);

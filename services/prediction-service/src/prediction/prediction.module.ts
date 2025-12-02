@@ -6,6 +6,8 @@ import { PredictionController } from './prediction.controller';
 import { PredictionService } from './prediction.service';
 import { BacktestService } from './backtest.service';
 import { StrategySelector } from './strategy-selector.service';
+import { ValidationService } from './validation.service';
+import { ValidationController } from './validation.controller';
 
 // Import entities
 import { Prediction } from './entities/prediction.entity';
@@ -52,12 +54,13 @@ import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
       },
     ]),
   ],
-  controllers: [PredictionController],
+  controllers: [PredictionController, ValidationController],
   providers: [
     PredictionService,
     BacktestService,
     StrategySelector,
-    // All 18 strategies
+    ValidationService,
+    // All 20 strategies
     FrequencyStrategy,
     DelayStrategy,
     HotColdStrategy,
@@ -79,6 +82,6 @@ import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
     CycleDetectionStrategy,
     AdaptiveHybridStrategy,
   ],
-  exports: [PredictionService],
+  exports: [PredictionService, ValidationService],
 })
 export class PredictionModule { }
