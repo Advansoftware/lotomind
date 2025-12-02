@@ -29,27 +29,42 @@ export function DashboardMetrics() {
   }
 
   const MetricCard = ({ icon, title, value, color }: any) => (
-    <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: 3, 
+        height: '100%',
+        borderRadius: 4,
+        bgcolor: 'white',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+        }
+      }}
+    >
       <Box display="flex" alignItems="center" gap={2}>
         <Box
           sx={{
-            width: 60,
-            height: 60,
-            borderRadius: 2,
-            background: `linear-gradient(135deg, ${color}20 0%, ${color}40 100%)`,
+            width: 64,
+            height: 64,
+            borderRadius: 3,
+            background: `linear-gradient(135deg, ${color}15 0%, ${color}30 100%)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: color,
+            boxShadow: `0 8px 16px ${color}20`
           }}
         >
           {icon}
         </Box>
         <Box flex={1}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" fontWeight="500" mb={0.5}>
             {title}
           </Typography>
-          <Typography variant="h5" fontWeight="bold">
+          <Typography variant="h4" fontWeight="800" color="text.primary">
             {value}
           </Typography>
         </Box>
@@ -61,7 +76,7 @@ export function DashboardMetrics() {
     <Grid container spacing={3}>
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          icon={<ShowChartIcon fontSize="large" />}
+          icon={<ShowChartIcon sx={{ fontSize: 32 }} />}
           title="Total de Predições"
           value={metrics.totalPredictions}
           color="#2979ff"
@@ -69,7 +84,7 @@ export function DashboardMetrics() {
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          icon={<TrendingUpIcon fontSize="large" />}
+          icon={<TrendingUpIcon sx={{ fontSize: 32 }} />}
           title="Precisão Média"
           value={`${(metrics.avgAccuracy * 100).toFixed(1)}%`}
           color="#00e676"
@@ -77,7 +92,7 @@ export function DashboardMetrics() {
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          icon={<EmojiEventsIcon fontSize="large" />}
+          icon={<EmojiEventsIcon sx={{ fontSize: 32 }} />}
           title="Melhor Estratégia"
           value={metrics.bestStrategy}
           color="#ffd600"
@@ -85,7 +100,7 @@ export function DashboardMetrics() {
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          icon={<EmojiEventsIcon fontSize="large" />}
+          icon={<EmojiEventsIcon sx={{ fontSize: 32 }} />}
           title="Total de Acertos"
           value={metrics.totalHits}
           color="#ff1744"

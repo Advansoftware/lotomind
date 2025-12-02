@@ -94,6 +94,7 @@ export class LotteryService {
       let updatedDraws = 0;
 
       for (const apiDraw of draws) {
+        this.logger.log(`Checking existence for concurso ${apiDraw.concurso} (type: ${typeof apiDraw.concurso})`);
         const existing = await this.drawRepository.findOne({
           where: {
             lotteryTypeId: lotteryType.id,
@@ -107,6 +108,7 @@ export class LotteryService {
         }
 
         const draw = this.createDrawFromAPI(apiDraw, lotteryType.id);
+        this.logger.log(`Saving draw: ${JSON.stringify(draw)}`);
         await this.drawRepository.save(draw);
         newDraws++;
 
@@ -132,6 +134,78 @@ export class LotteryService {
     }
   }
 
+  async syncFullHistory(lotteryTypeName: string) {
+    this.logger.log(`Starting full history sync for ${lotteryTypeName}...`);
+
+    try {
+      // Get latest draw to know the limit
+      const latestUrl = this.getAPIUrl(lotteryTypeName);
+      const response = await firstValueFrom(this.httpService.get(latestUrl));
+      const latestDraw = Array.isArray(response.data) ? response.data[0] : response.data;
+      const latestConcurso = latestDraw.concurso;
+
+      this.logger.log(`Latest concurso for ${lotteryTypeName} is ${latestConcurso}. Starting sync from 1...`);
+
+      let syncedCount = 0;
+      let errorCount = 0;
+
+      // Sync in batches of 10 to avoid rate limiting, but sequential to be safe
+      for (let concurso = 1; concurso <= latestConcurso; concurso++) {
+        try {
+          const exists = await this.drawRepository.findOne({
+            where: {
+              lotteryTypeId: (await this.getLotteryType(lotteryTypeName)).id,
+              concurso,
+            }
+          });
+
+          if (exists) {
+            continue;
+          }
+
+          await this.syncConcurso(lotteryTypeName, concurso);
+          syncedCount++;
+
+          // Small delay to be nice to the API
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+          if (syncedCount % 10 === 0) {
+            this.logger.log(`Synced ${syncedCount}/${latestConcurso} draws...`);
+          }
+        } catch (error) {
+          this.logger.error(`Failed to sync concurso ${concurso}: ${error.message}`);
+          errorCount++;
+        }
+      }
+
+      this.logger.log(`Full sync complete. Synced: ${syncedCount}, Errors: ${errorCount}`);
+      return { success: true, syncedCount, errorCount };
+    } catch (error) {
+      this.logger.error(`Fatal error in full sync: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async syncConcurso(lotteryTypeName: string, concurso: number) {
+    const url = `${this.getAPIUrl(lotteryTypeName)}/${concurso}`;
+    const response = await firstValueFrom(this.httpService.get(url));
+    const apiDraw = response.data;
+
+    const lotteryType = await this.getLotteryType(lotteryTypeName);
+    const draw = this.createDrawFromAPI(apiDraw, lotteryType.id);
+
+    await this.drawRepository.save(draw);
+
+    // Emit event
+    this.client.emit('lottery.draw.created', {
+      lotteryType: lotteryTypeName,
+      concurso: draw.concurso,
+      numbers: draw.numbers,
+    });
+
+    return draw;
+  }
+
   async syncAllLotteries() {
     const lotteryTypes = ['megasena', 'quina', 'lotofacil', 'lotomania'];
     const results = [];
@@ -152,6 +226,12 @@ export class LotteryService {
     return results;
   }
 
+  private async getLotteryType(name: string) {
+    const type = await this.lotteryTypeRepository.findOne({ where: { name } });
+    if (!type) throw new Error(`Lottery type ${name} not found`);
+    return type;
+  }
+
   private getAPIUrl(lotteryType: string): string {
     const urls = {
       megasena: 'https://loteriascaixa-api.herokuapp.com/api/megasena',
@@ -166,11 +246,46 @@ export class LotteryService {
     const draw = new Draw();
     draw.lotteryTypeId = lotteryTypeId;
     draw.concurso = apiDraw.concurso;
-    draw.drawDate = new Date(apiDraw.data);
-    draw.numbers = apiDraw.dezenas || apiDraw.listaDezenas || [];
+
+    // Robust Date Parsing
+    const parseDate = (dateStr: string): Date => {
+      if (!dateStr) throw new Error('Date string is empty');
+
+      // Handle DD/MM/YYYY
+      if (typeof dateStr === 'string' && dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          // Note: Month is 0-indexed in JS Date constructor if using arguments, 
+          // but 1-indexed in string format "YYYY-MM-DD"
+          const day = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10);
+          const year = parseInt(parts[2], 10);
+          return new Date(year, month - 1, day);
+        }
+      }
+
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        throw new Error(`Invalid date format: ${dateStr}`);
+      }
+      return date;
+    };
+
+    try {
+      draw.drawDate = parseDate(apiDraw.data);
+    } catch (e) {
+      this.logger.warn(`Date parsing failed for concurso ${apiDraw.concurso}: ${e.message}. Using current date as fallback for debug.`);
+      // FAIL SAFE: Don't crash, but maybe mark as invalid? 
+      // For now, let's throw to ensure we don't have bad data, but the loop catches it.
+      throw e;
+    }
+
+    // Parse numbers ensuring they are numbers
+    const rawNumbers = apiDraw.dezenas || apiDraw.listaDezenas || [];
+    draw.numbers = rawNumbers.map((n: any) => parseInt(n, 10)).filter((n: number) => !isNaN(n));
 
     // Calculate temporal context
-    const date = new Date(apiDraw.data);
+    const date = draw.drawDate;
     draw.dayOfWeek = date.getDay() + 1; // 1=Monday, 7=Sunday
     draw.dayOfMonth = date.getDate();
     draw.month = date.getMonth() + 1;
@@ -180,13 +295,20 @@ export class LotteryService {
 
     // Calculate numerical statistics
     const numbers = draw.numbers;
-    draw.sumOfNumbers = numbers.reduce((a, b) => a + b, 0);
-    draw.averageNumber = draw.sumOfNumbers / numbers.length;
 
-    // Calculate standard deviation
-    const mean = draw.averageNumber;
-    const variance = numbers.reduce((sum, num) => sum + Math.pow(num - mean, 2), 0) / numbers.length;
-    draw.stdDeviation = Math.sqrt(variance);
+    if (numbers.length > 0) {
+      draw.sumOfNumbers = numbers.reduce((a, b) => a + b, 0);
+      draw.averageNumber = draw.sumOfNumbers / numbers.length;
+
+      // Calculate standard deviation
+      const mean = draw.averageNumber;
+      const variance = numbers.reduce((sum, num) => sum + Math.pow(num - mean, 2), 0) / numbers.length;
+      draw.stdDeviation = Math.sqrt(variance);
+    } else {
+      draw.sumOfNumbers = 0;
+      draw.averageNumber = 0;
+      draw.stdDeviation = 0;
+    }
 
     // Pattern analysis
     draw.oddCount = numbers.filter(n => n % 2 !== 0).length;
@@ -194,10 +316,22 @@ export class LotteryService {
     draw.primeCount = numbers.filter(n => this.isPrime(n)).length;
     draw.consecutiveCount = this.countConsecutive(numbers);
 
-    // Prize information
+    // Prize information - Handle string values like "R$ 1.000,00" or null
+    const parseCurrency = (val: any): number => {
+      if (typeof val === 'number') return val;
+      if (!val) return 0;
+      if (typeof val === 'string') {
+        // Remove 'R$', '.', and replace ',' with '.'
+        const clean = val.replace(/[^\d,]/g, '').replace(',', '.');
+        const num = parseFloat(clean);
+        return isNaN(num) ? 0 : num;
+      }
+      return 0;
+    };
+
     draw.accumulated = apiDraw.acumulado || false;
-    draw.accumulatedValue = apiDraw.valorAcumulado || 0;
-    draw.estimatedPrize = apiDraw.valorEstimadoProximoConcurso || 0;
+    draw.accumulatedValue = parseCurrency(apiDraw.valorAcumulado);
+    draw.estimatedPrize = parseCurrency(apiDraw.valorEstimadoProximoConcurso);
 
     return draw;
   }

@@ -9,22 +9,6 @@ echo ""
 
 API_URL="http://localhost:3000/lottery"
 
-# Função para sincronizar uma loteria
-sync_lottery() {
-    local lottery=$1
-    local name=$2
-    
-    echo "📊 Sincronizando $name..."
-    
-    response=$(curl -s -X POST "$API_URL/sync" \
-        -H "Content-Type: application/json" \
-        -d "{
-            \"lotteryType\": \"$lottery\",
-            \"lastN\": 2000
-        }")
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ $name sincronizada com sucesso!"
         echo "   Resposta: $response"
     else
         echo "❌ Erro ao sincronizar $name"

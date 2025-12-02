@@ -5,6 +5,9 @@ import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { theme } from '@/theme/theme'
 import './globals.css'
+import { Sidebar } from '@/components/Sidebar'
+import { Box } from '@mui/material'
+import { Suspense } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,7 +29,14 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            {children}
+            <Box display="flex">
+              <Suspense fallback={<Box width={280} bgcolor="background.paper" />}>
+                <Sidebar />
+              </Suspense>
+              <Box component="main" sx={{ flexGrow: 1, ml: '280px', minHeight: '100vh', bgcolor: 'background.default' }}>
+                {children}
+              </Box>
+            </Box>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

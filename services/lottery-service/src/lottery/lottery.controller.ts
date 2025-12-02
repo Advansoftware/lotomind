@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { LotteryService } from './lottery.service';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @Controller()
 export class LotteryController {
-  constructor(private readonly lotteryService: LotteryService) {}
+  constructor(private readonly lotteryService: LotteryService) { }
 
   @Get('health')
   getHealth() {
@@ -42,7 +43,14 @@ export class LotteryController {
     return this.lotteryService.getLatestDraw(lotteryType);
   }
 
+  @Post('sync-full')
+  @ApiOperation({ summary: 'Sync full history for a lottery type' })
+  async syncFull(@Body('lotteryType') lotteryType: string) {
+    return this.lotteryService.syncFullHistory(lotteryType);
+  }
+
   @Post('sync')
+  @ApiOperation({ summary: 'Sync latest draws from external API' })
   async syncDraws(@Body('lotteryType') lotteryType: string) {
     return this.lotteryService.syncDrawsFromAPI(lotteryType);
   }
