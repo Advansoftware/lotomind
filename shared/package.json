@@ -1,0 +1,7 @@
+{
+  "name": "@lotomind/shared",
+  "version": "1.0.0",
+  "description": "Shared types and constants for LotoMind",
+  "main": "index.ts",
+  "private": true
+}
