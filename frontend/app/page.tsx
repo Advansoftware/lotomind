@@ -238,23 +238,33 @@ function HomeContent() {
             mb: 4,
             borderRadius: 3,
             bgcolor: "background.paper",
-            border: "1px solid rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            overflow: "hidden",
           }}
         >
           <Tabs
             value={activeTab}
             onChange={(_, v) => setActiveTab(v)}
             sx={{
+              minHeight: 56,
               "& .MuiTab-root": {
-                fontWeight: "bold",
+                fontWeight: 600,
                 textTransform: "none",
-                minHeight: 64,
+                minHeight: 56,
+                color: "#94a3b8",
+                fontSize: "0.95rem",
+                "&:hover": {
+                  color: "#e2e8f0",
+                  bgcolor: "rgba(255,255,255,0.03)",
+                },
               },
               "& .Mui-selected": {
-                color: `${lotteryTheme.colors.primary} !important`,
+                color: "#ffffff !important",
               },
               "& .MuiTabs-indicator": {
                 bgcolor: lotteryTheme.colors.primary,
+                height: 3,
+                borderRadius: "3px 3px 0 0",
               },
             }}
           >
