@@ -26,6 +26,16 @@ export class ProxyController {
     );
   }
 
+  @All('validation/*')
+  async proxyValidation(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/validation',
+    );
+  }
+
   @All('analytics/*')
   async proxyAnalytics(@Req() req: Request, @Res() res: Response) {
     return this.proxyService.proxyRequest(

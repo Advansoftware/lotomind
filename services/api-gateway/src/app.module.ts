@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProxyModule } from './proxy/proxy.module';
@@ -22,6 +23,19 @@ import { User } from './auth/entities/user.entity';
       synchronize: false,
       logging: process.env.NODE_ENV !== 'production',
     }),
+    ClientsModule.register([
+      {
+        name: 'GATEWAY_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL || 'amqp://lotomind:lotomind123@rabbitmq:5672'],
+          queue: 'gateway_queue',
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
+    ]),
     ThrottlerModule.forRoot([
       {
         ttl: 60000,

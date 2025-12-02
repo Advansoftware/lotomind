@@ -86,17 +86,20 @@ export function ValidationDashboard({
 
       // Try to get quick stats from rankings
       const rankings = await api.get(
-        `/predictions/validation/strategy-ranking?lotteryType=${lotteryType}`
+        `/validation/strategy-ranking?lotteryType=${lotteryType}`
       );
 
       if (rankings.data?.length > 0) {
         const totalValidated = rankings.data.reduce(
-          (sum: number, s: any) => sum + s.totalPredictions,
+          (sum: number, s: { totalPredictions: number }) =>
+            sum + s.totalPredictions,
           0
         );
         const avgHits =
-          rankings.data.reduce((sum: number, s: any) => sum + s.avgHits, 0) /
-          rankings.data.length;
+          rankings.data.reduce(
+            (sum: number, s: { avgHits: number }) => sum + s.avgHits,
+            0
+          ) / rankings.data.length;
 
         setStats({
           totalValidated,
@@ -107,7 +110,7 @@ export function ValidationDashboard({
           lastValidation: new Date().toLocaleDateString("pt-BR"),
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Stats not available yet
       setStats(null);
     } finally {
@@ -120,14 +123,15 @@ export function ValidationDashboard({
       setIsValidating(true);
       setError(null);
 
-      const response = await api.post("/predictions/validation/start", {
+      const response = await api.post("/validation/start", {
         lotteryType,
       });
 
       setValidationJobId(response.data.id);
       setTab(0); // Switch to progress tab
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Erro ao iniciar validação");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || "Erro ao iniciar validação");
       setIsValidating(false);
     }
   };

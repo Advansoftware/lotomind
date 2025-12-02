@@ -237,9 +237,7 @@ export function PredictionList({
         params.append("minHits", String(minHits));
       }
 
-      const response = await api.get(
-        `/predictions/validation/results?${params}`
-      );
+      const response = await api.get(`/validation/results?${params}`);
       setResults(response.data.data);
       setTotal(response.data.pagination.total);
     } catch (error) {

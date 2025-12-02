@@ -125,7 +125,7 @@ export function ValidationProgressWrapper({
   const loadJobStatus = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/predictions/validation/jobs/${jobId}`);
+      const response = await api.get(`/validation/jobs/${jobId}`);
       setProgress({
         jobId: response.data.id,
         status: response.data.status,
