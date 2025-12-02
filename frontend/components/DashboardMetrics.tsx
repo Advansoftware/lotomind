@@ -35,12 +35,14 @@ export function DashboardMetrics() {
         p: 3, 
         height: '100%',
         borderRadius: 4,
-        bgcolor: 'white',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        bgcolor: 'background.paper',
+        border: '1px solid rgba(255,255,255,0.05)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         '&:hover': {
           transform: 'translateY(-5px)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
         }
       }}
     >

@@ -20,12 +20,13 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
       sx={{ 
         borderRadius: 4, 
         overflow: 'hidden',
-        bgcolor: 'white',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        bgcolor: 'background.paper',
+        border: '1px solid rgba(255,255,255,0.05)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         '&:hover': {
           transform: 'translateY(-5px)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
         }
       }}
     >
@@ -33,7 +34,7 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Box display="flex" alignItems="center" gap={1}>
             <CalendarTodayIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-            <Typography variant="h6" fontWeight="800">
+            <Typography variant="h6" fontWeight="800" color="text.primary">
               Concurso {prediction.targetConcurso}
             </Typography>
           </Box>
@@ -43,7 +44,7 @@ export function PredictionCard({ prediction }: PredictionCardProps) {
             size="small"
             sx={{ 
               bgcolor: 'primary.main', 
-              color: 'white',
+              color: 'primary.contrastText',
               fontWeight: 'bold',
               borderRadius: 2
             }}

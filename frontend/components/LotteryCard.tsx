@@ -23,12 +23,13 @@ export function LotteryCard({ draw }: LotteryCardProps) {
       sx={{ 
         borderRadius: 4, 
         overflow: 'hidden',
-        bgcolor: 'white',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        bgcolor: 'background.paper',
+        border: '1px solid rgba(255,255,255,0.05)',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         '&:hover': {
           transform: 'translateY(-5px)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
         }
       }}
     >
@@ -43,7 +44,7 @@ export function LotteryCard({ draw }: LotteryCardProps) {
             icon={<CalendarTodayIcon sx={{ fontSize: '16px !important' }} />}
             label={new Date(draw.drawDate).toLocaleDateString('pt-BR')}
             size="small"
-            sx={{ bgcolor: 'rgba(0,0,0,0.05)', fontWeight: '500' }}
+            sx={{ bgcolor: 'rgba(255,255,255,0.05)', fontWeight: '500' }}
           />
         </Box>
 

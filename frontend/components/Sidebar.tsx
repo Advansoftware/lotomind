@@ -75,21 +75,24 @@ export function Sidebar() {
                   onClick={() => handleSelect(lottery.id)}
                   sx={{
                     borderRadius: 3,
-                    bgcolor: isSelected ? `${lottery.color}15` : 'transparent',
-                    color: isSelected ? lottery.color : 'text.secondary',
+                    mb: 1,
+                    bgcolor: isSelected ? 'primary.main' : 'transparent',
+                    color: isSelected ? 'primary.contrastText' : 'text.primary',
+                    transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      bgcolor: `${lottery.color}10`,
+                      bgcolor: isSelected ? 'primary.dark' : 'rgba(255,255,255,0.05)',
+                      transform: 'translateX(5px)'
                     }
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 40, color: isSelected ? lottery.color : 'text.secondary' }}>
+                  <ListItemIcon sx={{ minWidth: 40, color: isSelected ? 'primary.contrastText' : 'text.primary' }}>
                     <Box
                       sx={{
                         width: 10,
                         height: 10,
                         borderRadius: '50%',
-                        bgcolor: lottery.color,
-                        opacity: isSelected ? 1 : 0.5
+                        bgcolor: isSelected ? 'white' : lottery.color,
+                        boxShadow: isSelected ? '0 0 10px rgba(255,255,255,0.5)' : 'none'
                       }}
                     />
                   </ListItemIcon>
