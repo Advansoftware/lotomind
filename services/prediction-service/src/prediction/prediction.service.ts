@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import { BacktestService } from './backtest.service';
 import { StrategySelector } from './strategy-selector.service';
 
@@ -93,7 +93,7 @@ export class PredictionService {
     confidenceScore: number;
     generatedAt: Date;
   }> {
-    this.logger.log(`Generating prediction for ${params.lotteryType}`);
+    this.logger.log(`Generating prediction for ${ params.lotteryType }`);
 
     // Fetch historical draws
     const historicalDraws = await this.fetchHistoricalDraws(params.lotteryType);
@@ -107,7 +107,7 @@ export class PredictionService {
     if (params.strategyName) {
       strategy = this.strategies.find(s => s.name === params.strategyName);
       if (!strategy) {
-        throw new Error(`Strategy ${params.strategyName} not found`);
+        throw new Error(`Strategy ${ params.strategyName } not found`);
       }
     } else {
       // Auto-select best strategy
@@ -117,7 +117,7 @@ export class PredictionService {
         { lotteryType: params.lotteryType }
       );
       strategy = selection.bestStrategy;
-      this.logger.log(`Auto-selected strategy: ${strategy.displayName}`);
+      this.logger.log(`Auto - selected strategy: ${ strategy.displayName } `);
     }
 
     // Generate prediction
@@ -181,7 +181,7 @@ export class PredictionService {
     lotteryType: string;
     testSize?: number;
   }): Promise<any[]> {
-    this.logger.log(`Running backtest on all ${this.strategies.length} strategies`);
+    this.logger.log(`Running backtest on all ${ this.strategies.length } strategies`);
 
     const historicalDraws = await this.fetchHistoricalDraws(params.lotteryType);
 
@@ -206,7 +206,7 @@ export class PredictionService {
   }): Promise<any> {
     const strategy = this.strategies.find(s => s.name === params.strategyName);
     if (!strategy) {
-      throw new Error(`Strategy ${params.strategyName} not found`);
+      throw new Error(`Strategy ${ params.strategyName } not found`);
     }
 
     const historicalDraws = await this.fetchHistoricalDraws(params.lotteryType);
@@ -229,17 +229,19 @@ export class PredictionService {
     try {
       const lotteryServiceUrl = process.env.LOTTERY_SERVICE_URL || 'http://lottery-service:3001';
       const response = await firstValueFrom(
-        this.httpService.get(`${lotteryServiceUrl}/lottery/draws`, {
+        this.httpService.get(`${ lotteryServiceUrl } /lottery/draws`, {
           params: {
             lotteryType,
             limit: 500, // Get last 500 draws for analysis
           },
-        })
+        }).pipe(
+          map((res) => res.data),
+        ),
       );
 
-      return response.data;
+      return response as any;
     } catch (error) {
-      this.logger.error(`Error fetching historical draws: ${error.message}`);
+      this.logger.error(`Error fetching historical draws: ${ error.message } `);
       throw new Error('Failed to fetch historical data');
     }
   }
