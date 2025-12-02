@@ -1,13 +1,8 @@
-# 🎉 LotoMind Analytics - Sistema Completo
+# 🎰 LotoMind Analytics - Sistema Completo de Predição de Loterias
 
 [![GitHub](https://img.shields.io/badge/GitHub-Advansoftware%2Flotomind-blue)](https://github.com/Advansoftware/lotomind)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](PRODUCTION_READY.md)
-
-## 🎯 Sistema de Análise e Predição de Loterias
-
-Sistema completo de análise e predição de loterias brasileiras com **20 estratégias de IA/ML**, autenticação, WebSocket, e documentação Swagger.
-
 ### ✨ Características Principais
 
 - 🧠 **20 Estratégias de Predição** (Estatísticas, ML, Padrões, Matemática, Híbridas)
