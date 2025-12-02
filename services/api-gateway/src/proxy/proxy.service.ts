@@ -15,8 +15,24 @@ export class ProxyService {
   ) {
     try {
       // Remove the prefix from the path
-      const path = req.url.replace(`/api${pathPrefix}`, '');
-      const url = `${targetUrl}${pathPrefix}${path}`;
+      let path = req.url;
+
+      // Handle /api prefix if present
+      if (path.startsWith('/api')) {
+        path = path.replace('/api', '');
+      }
+
+      // Remove the service prefix (e.g. /lottery)
+      if (path.startsWith(pathPrefix)) {
+        path = path.replace(pathPrefix, '');
+      }
+
+      // Ensure path starts with /
+      if (!path.startsWith('/')) {
+        path = '/' + path;
+      }
+
+      const url = `${targetUrl}${path}`;
 
       console.log(`[Proxy] ${req.method} ${req.url} -> ${url}`);
 
