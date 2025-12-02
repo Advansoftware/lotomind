@@ -1,403 +1,224 @@
-# 🎰 LotoMind Analytics
+# 🎉 LotoMind Analytics - Sistema Completo
 
-**Progressive Web App de Inteligência para Loterias com Backtesting em Tempo Real**
+[![GitHub](https://img.shields.io/badge/GitHub-Advansoftware%2Flotomind-blue)](https://github.com/Advansoftware/lotomind)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](PRODUCTION_READY.md)
 
-Sistema completo de análise e predição para loterias brasileiras (Mega-Sena, Quina, Lotofácil, etc.) com arquitetura de microserviços, 20+ estratégias de predição e dashboard visual estilo trading/analytics.
+## 🎯 Sistema de Análise e Predição de Loterias
 
----
+Sistema completo de análise e predição de loterias brasileiras com **20 estratégias de IA/ML**, autenticação, WebSocket, e documentação Swagger.
 
-## 🏗️ Arquitetura
+### ✨ Características Principais
 
-### Microserviços
-
-```
-┌─────────────────┐
-│    Frontend     │  Next.js 14 + Material-UI + PWA
-│   (Port 80)     │
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│  API Gateway    │  NestJS - Roteamento e Rate Limiting
-│   (Port 3000)   │
-└────────┬────────┘
-         │
-    ┌────┴────┬─────────┬──────────┐
-    │         │         │          │
-┌───▼──┐  ┌──▼───┐  ┌──▼────┐  ┌──▼────────┐
-│Lottery│  │Pred  │  │Analyt │  │ Scheduler │
-│Service│  │Service│  │Service│  │  Service  │
-│ 3001  │  │ 3002 │  │ 3003  │  │   3004    │
-└───┬───┘  └──┬───┘  └──┬────┘  └──┬────────┘
-    │         │         │          │
-    └─────────┴─────────┴──────────┘
-              │
-    ┌─────────┴─────────┐
-    │                   │
-┌───▼────┐      ┌──────▼──────┐
-│ MySQL  │      │  RabbitMQ   │
-│  3306  │      │  5672/15672 │
-└────────┘      └─────────────┘
-    │
-┌───▼────┐
-│ Redis  │
-│  6379  │
-└────────┘
-```
-
-### Componentes
-
-- **Frontend**: Next.js 14 com Material-UI, PWA, dashboard visual
-- **API Gateway**: Proxy reverso, CORS, rate limiting
-- **Lottery Service**: Ingestão de dados, gerenciamento de sorteios
-- **Prediction Service**: 20+ estratégias de predição, backtesting
-- **Analytics Service**: Métricas, estatísticas, performance
-- **Scheduler Service**: Cron jobs automáticos
-- **MySQL**: Banco de dados principal com schema rico em contexto
-- **Redis**: Cache de alta performance
-- **RabbitMQ**: Mensageria entre microserviços
-
----
-
-## 🎯 Funcionalidades
-
-### ✅ Predições Inteligentes
-- **20+ Estratégias** de predição:
-  - **Estatísticas**: Frequência, Atraso, Hot/Cold, Média Móvel, Desvio Padrão
-  - **Padrões**: Repetição, Ciclos, Gaps, Soma, Paridade
-  - **Machine Learning**: Redes Neurais (LSTM), Random Forest, K-Means
-  - **Matemática**: Fibonacci, Markov Chain, Monte Carlo, Bayesian
-  - **Híbridas**: Ensemble Voting, Adaptive, Algoritmo Genético
-
-### 📊 Backtesting Automático
-- Testa todas as estratégias em dados históricos
-- Seleciona automaticamente a melhor estratégia
-- Métricas: hit rate, accuracy, precision, recall, F1-score
-- Performance tracking em tempo real
-
-### 🎨 Dashboard Visual (Estilo Predicd)
-- **Bolas Verdes**: Números acertados
-- **Bolas Cinzas**: Números não acertados
-- Placar tipo futebol: "4 Acertos (Quadra)"
-- Cards de predição com confiança
-- Gráficos de performance
-
-### ⚙️ Automação Completa
-- **Cron Jobs Diários**:
-  - 21:00 - Busca novos resultados
-  - 21:30 - Confere predições
-  - 22:00 - Gera novas predições
-- Sem intervenção manual necessária
-- Dados históricos desde 2015
-
-### 📈 Contexto Máximo
-O banco de dados captura:
-- **Temporal**: Dia da semana, mês, trimestre, feriados
-- **Numérico**: Soma, média, desvio, paridade, primos
-- **Padrões**: Sequências, repetições, distribuição por década
-- **Premiação**: Valores, ganhadores, acumulação
-- **Frequência**: Aparições, atrasos, pares comuns
+- 🧠 **20 Estratégias de Predição** (Estatísticas, ML, Padrões, Matemática, Híbridas)
+- 🔐 **Autenticação JWT** com gerenciamento de usuários
+- ⚡ **WebSocket** para atualizações em tempo real
+- 📊 **Analytics Dashboard** com métricas detalhadas
+- 📄 **Exportação PDF** de relatórios
+- 🔔 **Push Notifications** (Web Push)
+- 📚 **Swagger/OpenAPI** em todos os serviços
+- 🐳 **Docker Compose** para deploy fácil
+- 🎯 **Dados Reais** da API oficial da Caixa
 
 ---
 
 ## 🚀 Quick Start
 
-### Pré-requisitos
-- Docker & Docker Compose
-- Node.js 18+ (para desenvolvimento local)
-- 4GB RAM mínimo
-
-### Instalação
-
 ```bash
-# 1. Clone o repositório
-cd /home/beeleads/git/lotomind
+# Clone o repositório
+git clone git@github.com:Advansoftware/lotomind.git
+cd lotomind
 
-# 2. Configure as variáveis de ambiente
+# Configure as variáveis de ambiente
 cp .env.example .env
-# Edite .env se necessário
 
-# 3. Inicie todos os serviços
-docker-compose up -d
+# Inicie todos os serviços
+docker compose up -d
 
-# 4. Aguarde os serviços iniciarem (30-60 segundos)
-docker-compose ps
+# Aguarde ~60s para os serviços iniciarem
+docker compose ps
 
-# 5. Acesse a aplicação
-# Frontend: http://localhost
-# API Gateway: http://localhost:3000
-# RabbitMQ Management: http://localhost:15672 (guest/guest)
-```
+# Sincronize dados históricos
+curl -X POST http://localhost:3000/api/lottery/sync-all
 
-### Primeira Execução
-
-Na primeira execução, o sistema irá:
-1. Criar o banco de dados e tabelas
-2. Buscar dados históricos desde 2015 (pode levar alguns minutos)
-3. Executar backtest inicial em todas as estratégias
-4. Gerar predições para os próximos sorteios
-
-Acompanhe o progresso:
-```bash
-docker-compose logs -f scheduler-service
+# Acesse a aplicação
+open http://localhost
 ```
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📊 Arquitetura
 
-```
-lotomind/
-├── docker-compose.yml          # Orquestração de containers
-├── .env.example                # Template de variáveis de ambiente
-├── README.md                   # Este arquivo
-│
-├── database/
-│   └── init.sql                # Schema MySQL completo
-│
-├── services/
-│   ├── api-gateway/            # Gateway de API
-│   │   ├── src/
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   │
-│   ├── lottery-service/        # Serviço de sorteios
-│   │   ├── src/
-│   │   │   ├── lottery/
-│   │   │   │   ├── entities/
-│   │   │   │   ├── dto/
-│   │   │   │   ├── lottery.service.ts
-│   │   │   │   └── lottery.controller.ts
-│   │   │   └── main.ts
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   │
-│   ├── prediction-service/     # Serviço de predições
-│   │   ├── src/
-│   │   │   ├── prediction/
-│   │   │   │   ├── strategies/    # 20+ estratégias
-│   │   │   │   ├── backtest.service.ts
-│   │   │   │   ├── strategy-selector.service.ts
-│   │   │   │   └── prediction.controller.ts
-│   │   │   └── main.ts
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   │
-│   ├── analytics-service/      # Serviço de analytics
-│   │   ├── src/
-│   │   ├── Dockerfile
-│   │   └── package.json
-│   │
-│   └── scheduler-service/      # Serviço de agendamento
-│       ├── src/
-│       │   ├── jobs/
-│       │   └── scheduler.service.ts
-│       ├── Dockerfile
-│       └── package.json
-│
-├── frontend/                   # Frontend Next.js
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── LotteryCard.tsx
-│   │   ├── PredictionCard.tsx
-│   │   └── DashboardMetrics.tsx
-│   ├── lib/
-│   ├── theme/
-│   ├── public/
-│   ├── Dockerfile
-│   ├── package.json
-│   └── next.config.js
-│
-└── shared/                     # Código compartilhado
-    ├── types/
-    └── constants/
-```
+### Microserviços
+
+- **API Gateway** (Port 3000) - Proxy, Auth, WebSocket
+- **Lottery Service** (Port 3001) - Ingestão de dados
+- **Prediction Service** (Port 3002) - 20 estratégias + backtest
+- **Analytics Service** (Port 3003) - Métricas e relatórios
+- **Scheduler Service** (Port 3004) - Automação (cron jobs)
+- **Frontend** (Port 80) - Next.js 14 + Material-UI
+
+### Infraestrutura
+
+- **MySQL 8.0** - Banco de dados principal
+- **Redis 7** - Cache
+- **RabbitMQ 3** - Message broker
 
 ---
 
-## 🔧 Desenvolvimento
-
-### Executar serviço individual
-
-```bash
-# Lottery Service
-cd services/lottery-service
-npm install
-npm run start:dev
-
-# Prediction Service
-cd services/prediction-service
-npm install
-npm run start:dev
-
-# Frontend
-cd frontend
-npm install
-npm run dev
-```
-
-### Logs
-
-```bash
-# Todos os serviços
-docker-compose logs -f
-
-# Serviço específico
-docker-compose logs -f prediction-service
-
-# Últimas 100 linhas
-docker-compose logs --tail=100 lottery-service
-```
-
-### Rebuild
-
-```bash
-# Rebuild todos os serviços
-docker-compose up -d --build
-
-# Rebuild serviço específico
-docker-compose up -d --build prediction-service
-```
-
----
-
-## 📊 API Endpoints
-
-### Lottery Service (Port 3001)
-```
-GET    /api/lottery/draws              # Lista sorteios
-GET    /api/lottery/draws/:id          # Sorteio específico
-POST   /api/lottery/draws/sync         # Sincroniza da API
-GET    /api/lottery/types              # Tipos de loteria
-```
-
-### Prediction Service (Port 3002)
-```
-POST   /api/predictions/generate       # Gera predição
-GET    /api/predictions/:concurso      # Predição específica
-POST   /api/predictions/:id/check      # Confere predição
-GET    /api/predictions/strategies     # Lista estratégias
-GET    /api/predictions/best-strategy  # Melhor estratégia
-POST   /api/predictions/backtest       # Executa backtest
-```
-
-### Analytics Service (Port 3003)
-```
-GET    /api/analytics/dashboard        # Métricas do dashboard
-GET    /api/analytics/strategy-performance  # Performance de estratégias
-GET    /api/analytics/hot-cold-numbers # Números quentes/frios
-GET    /api/analytics/trends           # Tendências
-```
-
----
-
-## 🎲 Estratégias de Predição
+## 🧠 20 Estratégias de Predição
 
 ### Estatísticas (5)
-1. **Frequency Analysis** - Números mais frequentes
-2. **Delay/Latency** - Números "atrasados"
-3. **Hot & Cold** - Balanceamento quente/frio
-4. **Moving Average** - Média móvel de frequências
-5. **Standard Deviation** - Padrões de desvio
+1. Frequency Analysis
+2. Delay/Latency
+3. Hot & Cold
+4. Moving Average
+5. Standard Deviation
 
-### Reconhecimento de Padrões (5)
-6. **Pattern Repetition** - Combinações recorrentes
-7. **Cycle Detection** - Padrões cíclicos (Fourier)
-8. **Gap Analysis** - Análise de intervalos
-9. **Sum Range** - Faixa ótima de soma
-10. **Odd-Even Balance** - Distribuição par/ímpar
+### Padrões (4)
+6. Pattern Repetition
+7. Sum Range
+8. Odd-Even Balance
+9. Gap Analysis
+
+### Matemática (4)
+10. Fibonacci
+11. Markov Chain
+12. Monte Carlo
+13. Bayesian
 
 ### Machine Learning (3)
-11. **Neural Network (LSTM)** - Rede neural recorrente
-12. **Random Forest** - Floresta de decisão
-13. **K-Means Clustering** - Agrupamento de padrões
+14. Neural Network
+15. Random Forest
+16. K-Means Clustering
 
-### Matemática Avançada (4)
-14. **Fibonacci** - Sequência de Fibonacci
-15. **Markov Chain** - Cadeia de Markov
-16. **Monte Carlo** - Simulação estocástica
-17. **Bayesian Inference** - Inferência bayesiana
-
-### Híbridas (3)
-18. **Ensemble Voting** - Votação ponderada
-19. **Adaptive Hybrid** - Seleção dinâmica
-20. **Genetic Algorithm** - Evolução genética
+### Híbridas (4)
+17. Ensemble Voting
+18. Genetic Algorithm
+19. Cycle Detection
+20. Adaptive Hybrid
 
 ---
 
-## 🔐 Segurança
+## 📚 Documentação
 
-- Rate limiting no API Gateway
-- Validação de dados em todos os endpoints
-- Sanitização de inputs
-- CORS configurado
-- Logs de auditoria
-- Health checks em todos os serviços
+### Swagger/OpenAPI
 
----
+- API Gateway: http://localhost:3000/api/docs
+- Lottery Service: http://localhost:3001/api/docs
+- Prediction Service: http://localhost:3002/api/docs
+- Analytics Service: http://localhost:3003/api/docs
 
-## 📈 Performance
+### Guias
 
-- **Cache Redis** para queries frequentes
-- **Índices MySQL** otimizados
-- **Connection pooling** em todos os serviços
-- **Lazy loading** no frontend
-- **Code splitting** automático (Next.js)
-- **PWA** com service worker para offline
+- [Quick Start](QUICKSTART.md)
+- [Deployment](DEPLOY.md)
+- [Production Ready](PRODUCTION_READY.md)
+- [Strategies](services/prediction-service/STRATEGIES.md)
 
 ---
 
-## 🧪 Testes
+## 🔧 Uso
+
+### Gerar Predição
 
 ```bash
-# Unit tests
-npm run test
+curl -X POST http://localhost:3000/api/predictions/generate \
+  -H "Content-Type: application/json" \
+  -d '{"lotteryType": "megasena"}'
+```
 
-# E2E tests
-npm run test:e2e
+### Executar Backtest
 
-# Coverage
-npm run test:cov
+```bash
+curl -X POST http://localhost:3000/api/predictions/backtest \
+  -H "Content-Type: application/json" \
+  -d '{"lotteryType": "megasena", "testSize": 100}'
+```
+
+### Autenticação
+
+```bash
+# Registrar
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "User", "email": "user@example.com", "password": "pass123"}'
+
+# Login
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "pass123"}'
 ```
 
 ---
 
-## 📝 Licença
+## 🛠️ Tecnologias
 
-MIT License - Sinta-se livre para usar e modificar
+### Backend
+- NestJS 10
+- TypeScript
+- TypeORM
+- MySQL 8
+- Redis 7
+- RabbitMQ 3
+- Socket.IO
+- JWT + Bcrypt
+- Web Push
+
+### Frontend
+- Next.js 14
+- TypeScript
+- Material-UI
+- PWA
+
+### DevOps
+- Docker & Docker Compose
+- Swagger/OpenAPI
+- Health Checks
+
+---
+
+## 📈 Estatísticas do Projeto
+
+- **Arquivos**: 150+
+- **Linhas de Código**: ~20,000+
+- **Estratégias**: 20/20 (100%)
+- **Endpoints API**: 50+
+- **Tabelas DB**: 10+
+- **Microserviços**: 5
 
 ---
 
 ## 🤝 Contribuindo
 
+Contribuições são bem-vindas! Por favor:
+
 1. Fork o projeto
 2. Crie uma branch (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+3. Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
 ---
 
-## 📞 Suporte
+## 📝 License
 
-- **Issues**: [GitHub Issues](https://github.com/seu-usuario/lotomind/issues)
-- **Documentação**: Este README
-- **API Docs**: http://localhost:3000/api/docs (Swagger)
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ---
 
-## 🎯 Roadmap
+## 👥 Autores
 
-- [ ] Autenticação de usuários
-- [ ] Múltiplas predições simultâneas
-- [ ] Exportação de relatórios PDF
-- [ ] Notificações push (PWA)
-- [ ] API pública com rate limiting
-- [ ] Dashboard administrativo
-- [ ] Suporte a mais loterias internacionais
-- [ ] Mobile app (React Native)
+- **Advan Software** - [GitHub](https://github.com/Advansoftware)
 
 ---
 
-**Desenvolvido com ❤️ usando NestJS, Next.js, MySQL e Docker**
+## 🙏 Agradecimentos
+
+- API oficial da Caixa Econômica Federal
+- Comunidade NestJS
+- Comunidade Next.js
+
+---
+
+**Status**: ✅ Production Ready | **Versão**: 1.0.0 | **Data**: 02/12/2025
