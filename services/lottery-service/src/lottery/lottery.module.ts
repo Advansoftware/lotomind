@@ -4,12 +4,14 @@ import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { LotteryController } from './lottery.controller';
 import { LotteryService } from './lottery.service';
+import { SyncService } from './sync.service';
 import { Draw } from './entities/draw.entity';
 import { LotteryType } from './entities/lottery-type.entity';
+import { SyncJob } from './entities/sync-job.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Draw, LotteryType]),
+    TypeOrmModule.forFeature([Draw, LotteryType, SyncJob]),
     HttpModule,
     ClientsModule.register([
       {
@@ -26,7 +28,7 @@ import { LotteryType } from './entities/lottery-type.entity';
     ]),
   ],
   controllers: [LotteryController],
-  providers: [LotteryService],
-  exports: [LotteryService],
+  providers: [LotteryService, SyncService],
+  exports: [LotteryService, SyncService],
 })
-export class LotteryModule {}
+export class LotteryModule { }

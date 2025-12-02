@@ -1,11 +1,15 @@
-import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, Delete } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { LotteryService } from './lottery.service';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { SyncService } from './sync.service';
+import { ApiTags, ApiOperation, ApiQuery, ApiBody, ApiResponse } from '@nestjs/swagger';
 
 @Controller()
 export class LotteryController {
-  constructor(private readonly lotteryService: LotteryService) { }
+  constructor(
+    private readonly lotteryService: LotteryService,
+    private readonly syncService: SyncService,
+  ) { }
 
   @Get('health')
   getHealth() {
@@ -43,21 +47,71 @@ export class LotteryController {
     return this.lotteryService.getLatestDraw(lotteryType);
   }
 
+  // =====================
+  // ASYNC SYNC ENDPOINTS
+  // =====================
+
   @Post('sync-full')
-  @ApiOperation({ summary: 'Sync full history for a lottery type' })
+  @ApiOperation({ summary: 'Start async full sync for a lottery type - returns immediately with job ID' })
+  @ApiResponse({ status: 201, description: 'Sync job started' })
   async syncFull(@Body('lotteryType') lotteryType: string) {
-    return this.lotteryService.syncFullHistory(lotteryType);
+    const job = await this.syncService.startSyncJob('sync_full', lotteryType);
+    return {
+      success: true,
+      message: 'Sincronização iniciada em background',
+      jobId: job.id,
+      status: job.status,
+    };
   }
 
   @Post('sync')
-  @ApiOperation({ summary: 'Sync latest draws from external API' })
+  @ApiOperation({ summary: 'Sync latest draws from external API (async)' })
   async syncDraws(@Body('lotteryType') lotteryType: string) {
-    return this.lotteryService.syncDrawsFromAPI(lotteryType);
+    const job = await this.syncService.startSyncJob('sync_latest', lotteryType);
+    return {
+      success: true,
+      message: 'Sincronização do último concurso iniciada',
+      jobId: job.id,
+      status: job.status,
+    };
   }
 
   @Post('sync-all')
+  @ApiOperation({ summary: 'Start async sync for all lottery types' })
   async syncAllDraws() {
-    return this.lotteryService.syncAllLotteries();
+    const job = await this.syncService.startSyncJob('sync_all');
+    return {
+      success: true,
+      message: 'Sincronização de todas as loterias iniciada em background',
+      jobId: job.id,
+      status: job.status,
+    };
+  }
+
+  @Get('sync/jobs')
+  @ApiOperation({ summary: 'List all sync jobs' })
+  async getSyncJobs(@Query('limit') limit: number = 10) {
+    return this.syncService.getJobs(limit);
+  }
+
+  @Get('sync/jobs/:id')
+  @ApiOperation({ summary: 'Get sync job status and progress' })
+  async getSyncJobStatus(@Param('id') id: number) {
+    const job = await this.syncService.getJobStatus(id);
+    if (!job) {
+      return { error: 'Job not found' };
+    }
+    return job;
+  }
+
+  @Delete('sync/jobs/:id')
+  @ApiOperation({ summary: 'Cancel a running sync job' })
+  async cancelSyncJob(@Param('id') id: number) {
+    const cancelled = await this.syncService.cancelJob(id);
+    return {
+      success: cancelled,
+      message: cancelled ? 'Job cancelado' : 'Não foi possível cancelar o job',
+    };
   }
 
   // RabbitMQ Message Patterns

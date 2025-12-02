@@ -6,51 +6,99 @@ import { ProxyService } from './proxy.service';
 export class ProxyController {
   constructor(private readonly proxyService: ProxyService) { }
 
-  @All('lottery/*')
-  async proxyLottery(@Req() req: Request, @Res() res: Response) {
-    // Lottery service doesn't have /lottery prefix in its routes
+  // Lottery routes - base path
+  @All('lottery')
+  async proxyLotteryBase(@Req() req: Request, @Res() res: Response) {
     return this.proxyService.proxyRequest(
       req,
       res,
       process.env.LOTTERY_SERVICE_URL || 'http://lottery-service:3001',
       '/lottery',
-      false, // Remove /lottery prefix
+      false,
     );
   }
 
-  @All('predictions/*')
-  async proxyPrediction(@Req() req: Request, @Res() res: Response) {
-    // Prediction service has /predictions prefix in its routes
+  // Lottery routes - with subpaths
+  @All('lottery/*')
+  async proxyLottery(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.LOTTERY_SERVICE_URL || 'http://lottery-service:3001',
+      '/lottery',
+      false,
+    );
+  }
+
+  // Predictions routes - base path
+  @All('predictions')
+  async proxyPredictionBase(@Req() req: Request, @Res() res: Response) {
     return this.proxyService.proxyRequest(
       req,
       res,
       process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
       '/predictions',
-      true, // Keep /predictions prefix
+      true,
     );
   }
 
-  @All('validation/*')
-  async proxyValidation(@Req() req: Request, @Res() res: Response) {
-    // Validation routes are under /validation in prediction service
+  // Predictions routes - with subpaths
+  @All('predictions/*')
+  async proxyPrediction(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/predictions',
+      true,
+    );
+  }
+
+  // Validation routes - base path
+  @All('validation')
+  async proxyValidationBase(@Req() req: Request, @Res() res: Response) {
     return this.proxyService.proxyRequest(
       req,
       res,
       process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
       '/validation',
-      true, // Keep /validation prefix
+      true,
     );
   }
 
-  @All('analytics/*')
-  async proxyAnalytics(@Req() req: Request, @Res() res: Response) {
-    // Analytics service doesn't have /analytics prefix in its routes
+  // Validation routes - with subpaths
+  @All('validation/*')
+  async proxyValidation(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/validation',
+      true,
+    );
+  }
+
+  // Analytics routes - base path
+  @All('analytics')
+  async proxyAnalyticsBase(@Req() req: Request, @Res() res: Response) {
     return this.proxyService.proxyRequest(
       req,
       res,
       process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:3003',
       '/analytics',
-      false, // Remove /analytics prefix
+      true,
+    );
+  }
+
+  // Analytics routes - with subpaths
+  @All('analytics/*')
+  async proxyAnalytics(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:3003',
+      '/analytics',
+      true,
     );
   }
 }

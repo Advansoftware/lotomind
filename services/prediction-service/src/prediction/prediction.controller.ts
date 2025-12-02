@@ -23,6 +23,21 @@ class BacktestDto {
 export class PredictionController {
   constructor(private predictionService: PredictionService) { }
 
+  @Get()
+  @ApiOperation({
+    summary: 'List predictions',
+    description: 'Get list of predictions for a lottery type'
+  })
+  @ApiQuery({ name: 'lotteryType', required: false, description: 'Lottery type (default: megasena)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of predictions to return (default: 10)' })
+  @ApiResponse({ status: 200, description: 'Returns list of predictions' })
+  async listPredictions(
+    @Query('lotteryType') lotteryType: string = 'megasena',
+    @Query('limit') limit: number = 10
+  ) {
+    return await this.predictionService.listPredictions(lotteryType, limit);
+  }
+
   @Post('generate')
   @ApiOperation({
     summary: 'Generate prediction',

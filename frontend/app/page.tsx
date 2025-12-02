@@ -13,8 +13,11 @@ import {
   useTheme,
   Tabs,
   Tab,
+  Snackbar,
+  Alert,
+  LinearProgress,
 } from "@mui/material";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { LotteryCard } from "@/components/LotteryCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import { DashboardMetrics } from "@/components/DashboardMetrics";
@@ -26,13 +29,33 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScienceIcon from "@mui/icons-material/Science";
+import SyncIcon from "@mui/icons-material/Sync";
 import { useSearchParams } from "next/navigation";
+
+interface SyncJob {
+  id: number;
+  status: string;
+  progressPercent: number;
+  message: string;
+  processedItems: number;
+  totalItems: number;
+}
 
 function HomeContent() {
   const [loading, setLoading] = useState(true);
   const [latestDraws, setLatestDraws] = useState<any[]>([]);
   const [predictions, setPredictions] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState(0);
+  const [syncJob, setSyncJob] = useState<SyncJob | null>(null);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "info";
+  }>({
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const theme = useTheme();
   const searchParams = useSearchParams();
   const lotteryType = searchParams.get("lotteryType") || "megasena";
@@ -41,11 +64,7 @@ function HomeContent() {
   const lotteryTheme = getLotteryTheme(lotteryType);
   const lotteryConfig = getLotteryConfig(lotteryType);
 
-  useEffect(() => {
-    loadData();
-  }, [lotteryType]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -53,28 +72,127 @@ function HomeContent() {
       const drawsResponse = await api.get(
         `/lottery/draws?lotteryType=${lotteryType}&limit=3`
       );
-      setLatestDraws(drawsResponse.data);
+      setLatestDraws(drawsResponse.data || []);
 
       // Load predictions
-      const predictionsResponse = await api.get(
-        `/predictions?lotteryType=${lotteryType}&limit=6`
-      );
-      setPredictions(predictionsResponse.data);
+      try {
+        const predictionsResponse = await api.get(
+          `/predictions?lotteryType=${lotteryType}&limit=6`
+        );
+        setPredictions(predictionsResponse.data || []);
+      } catch {
+        setPredictions([]);
+      }
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [lotteryType]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Poll sync job status
+  useEffect(() => {
+    if (
+      !syncJob ||
+      syncJob.status === "completed" ||
+      syncJob.status === "failed"
+    ) {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await api.get(`/lottery/sync/jobs/${syncJob.id}`);
+        const job = response.data;
+        setSyncJob(job);
+
+        // Reload data periodically during sync
+        if (job.processedItems > 0 && job.processedItems % 10 === 0) {
+          loadData();
+        }
+
+        if (job.status === "completed") {
+          setSnackbar({
+            open: true,
+            message: `Sincronização concluída! ${
+              job.successCount || 0
+            } concursos sincronizados.`,
+            severity: "success",
+          });
+          loadData();
+        } else if (job.status === "failed") {
+          setSnackbar({
+            open: true,
+            message: `Erro na sincronização: ${job.message}`,
+            severity: "error",
+          });
+        }
+      } catch (error) {
+        console.error("Error polling job status:", error);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [syncJob, loadData]);
 
   const handleSync = async () => {
     try {
-      setLoading(true);
-      await api.post("/lottery/sync-full", { lotteryType });
-      await loadData();
+      // Call sync endpoint - returns immediately with job ID
+      const response = await api.post("/lottery/sync-full", { lotteryType });
+
+      setSyncJob({
+        id: response.data.jobId,
+        status: "running",
+        progressPercent: 0,
+        message: "Iniciando sincronização...",
+        processedItems: 0,
+        totalItems: 0,
+      });
+
+      setSnackbar({
+        open: true,
+        message: "Sincronização iniciada em background!",
+        severity: "info",
+      });
     } catch (error) {
-      console.error("Error syncing:", error);
-      setLoading(false);
+      console.error("Error starting sync:", error);
+      setSnackbar({
+        open: true,
+        message: "Erro ao iniciar sincronização",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleSyncAll = async () => {
+    try {
+      const response = await api.post("/lottery/sync-all");
+
+      setSyncJob({
+        id: response.data.jobId,
+        status: "running",
+        progressPercent: 0,
+        message: "Sincronizando todas as loterias...",
+        processedItems: 0,
+        totalItems: 4,
+      });
+
+      setSnackbar({
+        open: true,
+        message: "Sincronização de todas as loterias iniciada!",
+        severity: "info",
+      });
+    } catch (error) {
+      console.error("Error starting sync all:", error);
+      setSnackbar({
+        open: true,
+        message: "Erro ao iniciar sincronização",
+        severity: "error",
+      });
     }
   };
 
@@ -186,8 +304,15 @@ function HomeContent() {
                 <Button
                   variant="outlined"
                   size="large"
-                  startIcon={<RefreshIcon />}
+                  startIcon={
+                    syncJob?.status === "running" ? (
+                      <SyncIcon className="spinning" />
+                    ) : (
+                      <RefreshIcon />
+                    )
+                  }
                   onClick={handleSync}
+                  disabled={syncJob?.status === "running"}
                   sx={{
                     borderColor: "rgba(255,255,255,0.5)",
                     color: "white",
@@ -198,11 +323,55 @@ function HomeContent() {
                       borderColor: "white",
                       bgcolor: "rgba(255,255,255,0.1)",
                     },
+                    "@keyframes spin": {
+                      from: { transform: "rotate(0deg)" },
+                      to: { transform: "rotate(360deg)" },
+                    },
+                    "& .spinning": {
+                      animation: "spin 1s linear infinite",
+                    },
                   }}
                 >
-                  Sincronizar Tudo
+                  {syncJob?.status === "running"
+                    ? "Sincronizando..."
+                    : "Sincronizar"}
                 </Button>
               </Box>
+
+              {/* Sync Progress Bar */}
+              {syncJob?.status === "running" && (
+                <Box sx={{ mt: 3, maxWidth: 500 }}>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      {syncJob.message}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      {syncJob.progressPercent}%
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={syncJob.progressPercent}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "rgba(255,255,255,0.2)",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: "white",
+                        borderRadius: 4,
+                      },
+                    }}
+                  />
+                  {syncJob.totalItems > 0 && (
+                    <Typography
+                      variant="caption"
+                      sx={{ opacity: 0.7, mt: 0.5, display: "block" }}
+                    >
+                      {syncJob.processedItems} de {syncJob.totalItems} concursos
+                    </Typography>
+                  )}
+                </Box>
+              )}
             </Grid>
             <Grid item xs={12} md={4}>
               <Box
@@ -400,6 +569,22 @@ function HomeContent() {
           />
         )}
       </Container>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
