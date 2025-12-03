@@ -270,8 +270,6 @@ export function Sidebar() {
         >
           {drawerContent}
         </SwipeableDrawer>
-        {/* Spacer for fixed AppBar */}
-        <Box sx={{ height: 56 }} />
       </>
     );
   }

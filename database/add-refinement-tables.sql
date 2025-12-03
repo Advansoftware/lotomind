@@ -22,12 +22,21 @@ CREATE TABLE IF NOT EXISTS strategy_weights (
     -- Parâmetros ajustáveis da estratégia
     parameters JSON COMMENT 'Parâmetros específicos da estratégia que podem ser ajustados',
     
-    -- Métricas de performance recente
+    -- Métricas de performance
+    confidence DECIMAL(5,4) DEFAULT 0 COMMENT 'Confiança baseada em volume de testes',
+    hit_rate DECIMAL(5,4) DEFAULT 0 COMMENT 'Taxa de acertos premiados',
+    avg_hits DECIMAL(5,2) DEFAULT 0 COMMENT 'Média de acertos',
+    total_predictions INT DEFAULT 0 COMMENT 'Total de predições testadas',
+    successful_predictions INT DEFAULT 0 COMMENT 'Predições premiadas',
     recent_performance DECIMAL(6,4) DEFAULT 0 COMMENT 'Performance nos últimos 50 concursos',
     trend VARCHAR(20) DEFAULT 'stable' COMMENT 'improving, stable, declining',
     
+    -- Status
+    is_active BOOLEAN DEFAULT TRUE,
+    
     -- Metadata
     generation INT DEFAULT 1 COMMENT 'Geração evolutiva',
+    last_calculated TIMESTAMP NULL,
     last_refinement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -35,6 +44,7 @@ CREATE TABLE IF NOT EXISTS strategy_weights (
     UNIQUE KEY unique_lottery_strategy (lottery_type_id, strategy_id),
     INDEX idx_weight (weight DESC),
     INDEX idx_lottery (lottery_type_id),
+    INDEX idx_active (is_active),
     FOREIGN KEY (lottery_type_id) REFERENCES lottery_types(id) ON DELETE CASCADE,
     FOREIGN KEY (strategy_id) REFERENCES strategies(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -47,7 +57,7 @@ CREATE TABLE IF NOT EXISTS refinement_jobs (
     lottery_type_id INT,
     
     -- Tipo de refinamento
-    refinement_type ENUM('weight_adjustment', 'genetic_evolution', 'parameter_tuning', 'ensemble_optimization', 'full_cycle') NOT NULL,
+    refinement_type ENUM('weight_adjustment', 'genetic_evolution', 'parameter_tuning', 'ensemble_optimization', 'full_cycle') DEFAULT 'full_cycle',
     
     -- Status
     status ENUM('queued', 'running', 'completed', 'failed') DEFAULT 'queued',
@@ -61,6 +71,7 @@ CREATE TABLE IF NOT EXISTS refinement_jobs (
     config JSON COMMENT 'Configurações do refinamento',
     
     -- Resultados
+    results JSON COMMENT 'Resultados do refinamento',
     strategies_improved INT DEFAULT 0,
     avg_improvement DECIMAL(6,4) DEFAULT 0,
     best_improvement DECIMAL(6,4) DEFAULT 0,
@@ -72,6 +83,7 @@ CREATE TABLE IF NOT EXISTS refinement_jobs (
     
     -- Timing
     started_at TIMESTAMP NULL,
+    finished_at TIMESTAMP NULL,
     completed_at TIMESTAMP NULL,
     execution_time_seconds INT,
     
@@ -83,6 +95,7 @@ CREATE TABLE IF NOT EXISTS refinement_jobs (
     INDEX idx_status (status),
     INDEX idx_lottery (lottery_type_id),
     INDEX idx_type (refinement_type),
+    INDEX idx_started (started_at),
     FOREIGN KEY (lottery_type_id) REFERENCES lottery_types(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -96,13 +109,19 @@ CREATE TABLE IF NOT EXISTS refinement_history (
     strategy_id INT NOT NULL,
     
     -- Valores antes/depois
+    previous_weight DECIMAL(6,4),
+    new_weight DECIMAL(6,4),
     weight_before DECIMAL(6,4),
     weight_after DECIMAL(6,4),
     parameters_before JSON,
     parameters_after JSON,
     
     -- Razão do ajuste
-    reason VARCHAR(255) COMMENT 'Por que o ajuste foi feito',
+    change_reason VARCHAR(255) COMMENT 'Por que o ajuste foi feito',
+    reason VARCHAR(255) COMMENT 'Alias para change_reason',
+    
+    -- Dados de performance
+    performance_data JSON COMMENT 'Métricas que justificam o ajuste',
     
     -- Métricas que justificam
     max_hits_achieved INT,
@@ -117,6 +136,7 @@ CREATE TABLE IF NOT EXISTS refinement_history (
     INDEX idx_job (refinement_job_id),
     INDEX idx_strategy (strategy_id),
     INDEX idx_lottery (lottery_type_id),
+    INDEX idx_created (created_at),
     FOREIGN KEY (refinement_job_id) REFERENCES refinement_jobs(id) ON DELETE CASCADE,
     FOREIGN KEY (lottery_type_id) REFERENCES lottery_types(id) ON DELETE CASCADE,
     FOREIGN KEY (strategy_id) REFERENCES strategies(id) ON DELETE CASCADE
@@ -132,8 +152,11 @@ CREATE TABLE IF NOT EXISTS strategy_evolution (
     -- Geração
     generation INT NOT NULL,
     
+    -- DNA da estratégia
+    strategy_dna JSON NOT NULL COMMENT 'DNA representando parâmetros da estratégia',
+    
     -- Cromossomo (representação da combinação de estratégias)
-    chromosome JSON NOT NULL COMMENT 'Array de {strategyId, weight, parameters}',
+    chromosome JSON COMMENT 'Array de {strategyId, weight, parameters}',
     
     -- Fitness (quanto maior, melhor)
     fitness_score DECIMAL(10,4) NOT NULL,
@@ -146,8 +169,10 @@ CREATE TABLE IF NOT EXISTS strategy_evolution (
     is_best_ever BOOLEAN DEFAULT FALSE COMMENT 'Melhor de todas as gerações',
     
     -- Origem
+    parent_ids VARCHAR(255) COMMENT 'IDs dos pais separados por vírgula',
     parent1_id INT COMMENT 'ID do primeiro pai (crossover)',
     parent2_id INT COMMENT 'ID do segundo pai (crossover)',
+    mutations JSON COMMENT 'Mutações aplicadas',
     mutation_rate DECIMAL(4,2) DEFAULT 0,
     
     -- Validação

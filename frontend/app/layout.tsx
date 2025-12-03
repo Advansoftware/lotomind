@@ -55,7 +55,7 @@ export default function RootLayout({
                   flexGrow: 1,
                   minHeight: "100vh",
                   bgcolor: "background.default",
-                  ml: { xs: 0, md: "280px" },
+                  pt: { xs: "56px", md: 0 },
                   width: { xs: "100%", md: "calc(100% - 280px)" },
                 }}
               >

@@ -150,7 +150,7 @@ export class AutoRefinementService {
         const [existing] = await this.dataSource.query(`
           SELECT id, weight FROM strategy_weights 
           WHERE strategy_id = ? AND lottery_type_id = ?
-        `, [result.strategyId, lotteryTypeId]);
+        `, [result.strategy_id, lotteryTypeId]);
 
         if (existing) {
           const previousWeight = existing.weight;
@@ -177,7 +177,7 @@ export class AutoRefinementService {
               (strategy_id, lottery_type_id, previous_weight, new_weight, change_reason, performance_data)
               VALUES (?, ?, ?, ?, ?, ?)
             `, [
-              result.strategyId,
+              result.strategy_id,
               lotteryTypeId,
               previousWeight,
               smoothedWeight,
@@ -192,7 +192,7 @@ export class AutoRefinementService {
             (strategy_id, lottery_type_id, weight, confidence, hit_rate, avg_hits, 
              total_predictions, successful_predictions, last_calculated, is_active)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 1)
-          `, [result.strategyId, lotteryTypeId, weight, confidence, hitRate, avgHits,
+          `, [result.strategy_id, lotteryTypeId, weight, confidence, hitRate, avgHits,
             totalPredictions, successfulPredictions]);
         }
 
@@ -221,7 +221,7 @@ export class AutoRefinementService {
 
     try {
       // Registrar job de refinamento
-      const [jobResult] = await this.dataSource.query(`
+      const jobResult = await this.dataSource.query(`
         INSERT INTO refinement_jobs (status, started_at) VALUES ('running', NOW())
       `);
       const jobId = jobResult.insertId;
