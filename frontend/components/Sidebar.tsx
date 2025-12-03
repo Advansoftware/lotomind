@@ -73,12 +73,12 @@ export function Sidebar() {
               width: 44,
               height: 44,
               borderRadius: 2,
-              background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.dark} 100%)`,
+              background: `linear-gradient(135deg, ${currentTheme.colors.primary} 0%, ${currentTheme.colors.dark} 100%)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "white",
-              boxShadow: `0 4px 14px ${currentTheme.primary}40`,
+              boxShadow: `0 4px 14px ${currentTheme.colors.primary}40`,
             }}
           >
             <CasinoIcon sx={{ fontSize: 26 }} />
@@ -231,7 +231,7 @@ export function Sidebar() {
                   width: 32,
                   height: 32,
                   borderRadius: 1.5,
-                  background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.dark} 100%)`,
+                  background: `linear-gradient(135deg, ${currentTheme.colors.primary} 0%, ${currentTheme.colors.dark} 100%)`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
