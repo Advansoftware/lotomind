@@ -17,7 +17,7 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 
 // Simplified theme interface
@@ -305,11 +305,7 @@ export function StrategyRanking({
   const [strategies, setStrategies] = useState<StrategyStats[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStrategies();
-  }, [lotteryType]);
-
-  const loadStrategies = async () => {
+  const loadStrategies = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get(
@@ -349,7 +345,11 @@ export function StrategyRanking({
     } finally {
       setLoading(false);
     }
-  };
+  }, [lotteryType]);
+
+  useEffect(() => {
+    loadStrategies();
+  }, [loadStrategies]);
 
   if (loading) {
     return (

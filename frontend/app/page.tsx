@@ -16,6 +16,7 @@ import {
   Snackbar,
   Alert,
   LinearProgress,
+  useMediaQuery,
 } from "@mui/material";
 import { useEffect, useState, Suspense, useCallback } from "react";
 import { LotteryCard } from "@/components/LotteryCard";
@@ -58,6 +59,7 @@ function HomeContent() {
   });
   const [generatingPrediction, setGeneratingPrediction] = useState(false);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const searchParams = useSearchParams();
   const lotteryType = searchParams.get("lotteryType") || "megasena";
 
@@ -251,31 +253,46 @@ function HomeContent() {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", pb: 8 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", pb: 4 }}>
       {/* Hero Section with Dynamic Gradient */}
       <Box
         sx={{
           background: lotteryTheme.colors.gradient,
           color: "white",
-          pt: 8,
-          pb: 12,
-          mb: -6,
-          borderRadius: "0 0 40px 40px",
+          pt: { xs: 4, md: 8 },
+          pb: { xs: 8, md: 12 },
+          mb: { xs: -4, md: -6 },
+          borderRadius: { xs: "0 0 24px 24px", md: "0 0 40px 40px" },
           boxShadow: `0 10px 30px ${lotteryTheme.colors.dark}40`,
           transition: "all 0.4s ease-in-out",
         }}
       >
         <Container maxWidth="xl">
-          <Grid container alignItems="center" spacing={4}>
+          <Grid container alignItems="center" spacing={{ xs: 2, md: 4 }}>
             <Grid item xs={12} md={8}>
-              <Box display="flex" alignItems="center" gap={2} mb={2}>
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={1}
+                mb={2}
+                flexWrap="wrap"
+              >
                 <Chip
-                  icon={<AutoAwesomeIcon sx={{ color: "white !important" }} />}
-                  label="IA & Machine Learning"
+                  icon={
+                    <AutoAwesomeIcon
+                      sx={{
+                        color: "white !important",
+                        fontSize: { xs: 14, md: 18 },
+                      }}
+                    />
+                  }
+                  label="IA & ML"
+                  size="small"
                   sx={{
                     bgcolor: "rgba(255,255,255,0.2)",
                     color: "white",
                     backdropFilter: "blur(10px)",
+                    fontSize: { xs: "0.7rem", md: "0.8rem" },
                   }}
                 />
                 <Chip
@@ -286,43 +303,63 @@ function HomeContent() {
                     color: "white",
                     fontWeight: "bold",
                     border: "1px solid rgba(255,255,255,0.3)",
+                    fontSize: { xs: "0.7rem", md: "0.8rem" },
                   }}
                 />
               </Box>
               <Typography
-                variant="h2"
+                variant="h3"
                 component="h1"
                 fontWeight="800"
                 gutterBottom
-                sx={{ textShadow: "0 4px 10px rgba(0,0,0,0.3)" }}
+                sx={{
+                  textShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                  fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" },
+                }}
               >
-                {lotteryTheme.displayName} Analytics
+                {lotteryTheme.displayName}
               </Typography>
               <Typography
-                variant="h5"
-                sx={{ opacity: 0.9, maxWidth: 600, mb: 2, fontWeight: 300 }}
+                variant="body1"
+                sx={{
+                  opacity: 0.9,
+                  maxWidth: 600,
+                  mb: 2,
+                  fontWeight: 300,
+                  fontSize: { xs: "0.9rem", md: "1.1rem" },
+                  display: { xs: "none", sm: "block" },
+                }}
               >
                 {lotteryTheme.description}
               </Typography>
               <Typography
-                variant="body1"
-                sx={{ opacity: 0.8, maxWidth: 600, mb: 4 }}
+                variant="body2"
+                sx={{
+                  opacity: 0.8,
+                  maxWidth: 600,
+                  mb: 3,
+                  display: { xs: "none", md: "block" },
+                }}
               >
-                Inteligência Artificial avançada para análise e predição com 20
-                estratégias exclusivas.
-                <br />
                 <strong>Configuração:</strong> {lotteryConfig.numbersToDraw}{" "}
                 números de {lotteryConfig.maxNumber} | Sorteios:{" "}
                 {lotteryConfig.drawDays.join(", ")}
               </Typography>
-              <Box display="flex" gap={2}>
+
+              {/* Mobile-friendly buttons */}
+              <Box
+                display="flex"
+                gap={{ xs: 1, md: 2 }}
+                flexDirection={{ xs: "column", sm: "row" }}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
                 <Button
                   variant="contained"
-                  size="large"
+                  size={isMobile ? "medium" : "large"}
                   startIcon={
                     generatingPrediction ? (
                       <CircularProgress
-                        size={20}
+                        size={18}
                         sx={{ color: lotteryTheme.colors.dark }}
                       />
                     ) : (
@@ -331,13 +368,15 @@ function HomeContent() {
                   }
                   onClick={handleGeneratePrediction}
                   disabled={generatingPrediction}
+                  fullWidth={isMobile}
                   sx={{
                     bgcolor: "white",
                     color: lotteryTheme.colors.dark,
                     fontWeight: "bold",
-                    px: 4,
-                    py: 1.5,
+                    px: { xs: 2, md: 4 },
+                    py: { xs: 1, md: 1.5 },
                     borderRadius: 3,
+                    fontSize: { xs: "0.85rem", md: "1rem" },
                     "&:hover": {
                       bgcolor: "rgba(255,255,255,0.9)",
                       transform: "translateY(-2px)",
@@ -350,11 +389,15 @@ function HomeContent() {
                     transition: "all 0.3s ease",
                   }}
                 >
-                  {generatingPrediction ? "Gerando..." : "Gerar Nova Predição"}
+                  {generatingPrediction
+                    ? "Gerando..."
+                    : isMobile
+                    ? "Gerar Predição"
+                    : "Gerar Nova Predição"}
                 </Button>
                 <Button
                   variant="outlined"
-                  size="large"
+                  size={isMobile ? "medium" : "large"}
                   startIcon={
                     syncJob?.status === "running" ? (
                       <SyncIcon className="spinning" />
@@ -364,12 +407,14 @@ function HomeContent() {
                   }
                   onClick={handleSync}
                   disabled={syncJob?.status === "running"}
+                  fullWidth={isMobile}
                   sx={{
                     borderColor: "rgba(255,255,255,0.5)",
                     color: "white",
                     fontWeight: "bold",
-                    px: 3,
+                    px: { xs: 2, md: 3 },
                     borderRadius: 3,
+                    fontSize: { xs: "0.85rem", md: "1rem" },
                     "&:hover": {
                       borderColor: "white",
                       bgcolor: "rgba(255,255,255,0.1)",
@@ -393,10 +438,22 @@ function HomeContent() {
               {syncJob?.status === "running" && (
                 <Box sx={{ mt: 3, maxWidth: 500 }}>
                   <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        opacity: 0.9,
+                        fontSize: { xs: "0.75rem", md: "0.875rem" },
+                      }}
+                    >
                       {syncJob.message}
                     </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        opacity: 0.9,
+                        fontSize: { xs: "0.75rem", md: "0.875rem" },
+                      }}
+                    >
                       {syncJob.progressPercent}%
                     </Typography>
                   </Box>
@@ -427,12 +484,15 @@ function HomeContent() {
             <Grid item xs={12} md={4}>
               <Box
                 sx={{
-                  display: "flex",
+                  display: { xs: "none", md: "flex" },
                   justifyContent: "center",
                   alignItems: "center",
-                  fontSize: "120px",
-                  opacity: 0.3,
-                  filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.3))",
+                  fontSize: "140px",
+                  filter:
+                    "drop-shadow(0 0 20px rgba(255,255,255,0.3)) drop-shadow(0 0 40px rgba(0,0,0,0.5))",
+                  textShadow:
+                    "0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(0,0,0,0.3)",
+                  WebkitTextStroke: "2px rgba(255,255,255,0.2)",
                 }}
               >
                 {lotteryTheme.icon}
@@ -553,8 +613,8 @@ function HomeContent() {
                     }}
                   >
                     <Typography color="text.secondary">
-                      Nenhum sorteio encontrado. Clique em "Sincronizar Tudo"
-                      para carregar os dados.
+                      Nenhum sorteio encontrado. Clique em &quot;Sincronizar
+                      Tudo&quot; para carregar os dados.
                     </Typography>
                   </Paper>
                 )}
@@ -609,8 +669,8 @@ function HomeContent() {
                       }}
                     >
                       <Typography color="text.secondary">
-                        Nenhuma predição ativa. Clique em "Gerar Nova Predição"
-                        para começar.
+                        Nenhuma predição ativa. Clique em &quot;Gerar Nova
+                        Predição&quot; para começar.
                       </Typography>
                     </Paper>
                   </Grid>

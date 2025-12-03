@@ -23,7 +23,7 @@ import {
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 import { getLotteryTheme } from "@/lib/lottery-config";
 import { LotteryBall } from "./LotteryBall";
@@ -221,11 +221,7 @@ export function PredictionList({
   const [minHits, setMinHits] = useState<number | "">("");
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    loadResults();
-  }, [lotteryType, page, rowsPerPage, minHits]);
-
-  const loadResults = async () => {
+  const loadResults = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -256,7 +252,11 @@ export function PredictionList({
     } finally {
       setLoading(false);
     }
-  };
+  }, [lotteryType, page, rowsPerPage, minHits]);
+
+  useEffect(() => {
+    loadResults();
+  }, [loadResults]);
 
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);

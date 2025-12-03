@@ -4,7 +4,7 @@ import { Grid, Paper, Typography, Box } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { api } from "@/lib/api";
 import { LotteryTheme } from "@/lib/lottery-config";
 
@@ -24,11 +24,7 @@ export function DashboardMetrics({
     totalHits: 0,
   });
 
-  useEffect(() => {
-    loadMetrics();
-  }, [lotteryType]);
-
-  const loadMetrics = async () => {
+  const loadMetrics = useCallback(async () => {
     try {
       const response = await api.get(
         `/analytics/dashboard?lotteryType=${lotteryType}`
@@ -37,7 +33,11 @@ export function DashboardMetrics({
     } catch (error) {
       console.error("Error loading metrics:", error);
     }
-  };
+  }, [lotteryType]);
+
+  useEffect(() => {
+    loadMetrics();
+  }, [loadMetrics]);
 
   const MetricCard = ({ icon, title, value, color }: any) => (
     <Paper

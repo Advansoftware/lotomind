@@ -26,9 +26,12 @@ import {
   InputLabel,
   Card,
   CardContent,
-  Divider,
   Tooltip,
   IconButton,
+  useMediaQuery,
+  useTheme,
+  Stack,
+  Fab,
 } from "@mui/material";
 import {
   TrendingUp,
@@ -92,6 +95,8 @@ interface RefinementStats {
 }
 
 export default function RefinementDashboard() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [lotteryTypes, setLotteryTypes] = useState<LotteryType[]>([]);
   const [selectedLottery, setSelectedLottery] = useState<number | "">("");
   const [weights, setWeights] = useState<StrategyWeight[]>([]);
@@ -234,13 +239,13 @@ export default function RefinementDashboard() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
       <Typography
-        variant="h4"
-        sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
+        variant={isMobile ? "h5" : "h4"}
+        sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
       >
-        <Psychology fontSize="large" />
-        Sistema de Auto-Refinamento
+        <Psychology fontSize={isMobile ? "medium" : "large"} />
+        {isMobile ? "Auto-Refinamento" : "Sistema de Auto-Refinamento"}
       </Typography>
 
       {error && (
@@ -259,63 +264,134 @@ export default function RefinementDashboard() {
         </Alert>
       )}
 
-      {/* Stats Overview */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
+      {/* Stats Overview - Mobile Optimized */}
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ height: "100%" }}>
+            <CardContent
+              sx={{
+                p: { xs: 1.5, md: 2 },
+                "&:last-child": { pb: { xs: 1.5, md: 2 } },
+              }}
+            >
               <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  mb: 0.5,
+                }}
               >
-                <Speed color="primary" />
-                <Typography variant="h6">Pesos Calculados</Typography>
+                <Speed color="primary" sx={{ fontSize: { xs: 18, md: 24 } }} />
+                <Typography variant={isMobile ? "caption" : "subtitle2"} noWrap>
+                  Pesos
+                </Typography>
               </Box>
-              <Typography variant="h3" color="primary">
+              <Typography
+                variant={isMobile ? "h5" : "h4"}
+                color="primary"
+                fontWeight="bold"
+              >
                 {stats?.totalWeightsCalculated || 0}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ height: "100%" }}>
+            <CardContent
+              sx={{
+                p: { xs: 1.5, md: 2 },
+                "&:last-child": { pb: { xs: 1.5, md: 2 } },
+              }}
+            >
               <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  mb: 0.5,
+                }}
               >
-                <History color="secondary" />
-                <Typography variant="h6">Histórico</Typography>
+                <History
+                  color="secondary"
+                  sx={{ fontSize: { xs: 18, md: 24 } }}
+                />
+                <Typography variant={isMobile ? "caption" : "subtitle2"} noWrap>
+                  Histórico
+                </Typography>
               </Box>
-              <Typography variant="h3" color="secondary">
+              <Typography
+                variant={isMobile ? "h5" : "h4"}
+                color="secondary"
+                fontWeight="bold"
+              >
                 {stats?.totalHistoryRecords || 0}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ height: "100%" }}>
+            <CardContent
+              sx={{
+                p: { xs: 1.5, md: 2 },
+                "&:last-child": { pb: { xs: 1.5, md: 2 } },
+              }}
+            >
               <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  mb: 0.5,
+                }}
               >
-                <Science color="success" />
-                <Typography variant="h6">Evoluções</Typography>
+                <Science
+                  sx={{ fontSize: { xs: 18, md: 24 }, color: "#10b981" }}
+                />
+                <Typography variant={isMobile ? "caption" : "subtitle2"} noWrap>
+                  Evoluções
+                </Typography>
               </Box>
-              <Typography variant="h3" sx={{ color: "#10b981" }}>
+              <Typography
+                variant={isMobile ? "h5" : "h4"}
+                sx={{ color: "#10b981" }}
+                fontWeight="bold"
+              >
                 {stats?.totalEvolutions || 0}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ height: "100%" }}>
+            <CardContent
+              sx={{
+                p: { xs: 1.5, md: 2 },
+                "&:last-child": { pb: { xs: 1.5, md: 2 } },
+              }}
+            >
               <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  mb: 0.5,
+                }}
               >
-                <AutoGraph color="warning" />
-                <Typography variant="h6">Combinações</Typography>
+                <AutoGraph
+                  sx={{ fontSize: { xs: 18, md: 24 }, color: "#f59e0b" }}
+                />
+                <Typography variant={isMobile ? "caption" : "subtitle2"} noWrap>
+                  Combos
+                </Typography>
               </Box>
-              <Typography variant="h3" sx={{ color: "#f59e0b" }}>
+              <Typography
+                variant={isMobile ? "h5" : "h4"}
+                sx={{ color: "#f59e0b" }}
+                fontWeight="bold"
+              >
                 {stats?.totalCombinations || 0}
               </Typography>
             </CardContent>
@@ -323,26 +399,76 @@ export default function RefinementDashboard() {
         </Grid>
       </Grid>
 
-      {/* Actions */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Loteria</InputLabel>
-              <Select
-                value={selectedLottery}
-                label="Loteria"
-                onChange={(e) => setSelectedLottery(e.target.value as number)}
+      {/* Actions - Mobile Optimized */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Stack spacing={2}>
+          <FormControl fullWidth size={isMobile ? "small" : "medium"}>
+            <InputLabel>Loteria</InputLabel>
+            <Select
+              value={selectedLottery}
+              label="Loteria"
+              onChange={(e) => setSelectedLottery(e.target.value as number)}
+            >
+              {lotteryTypes.map((lt) => (
+                <MenuItem key={lt.id} value={lt.id}>
+                  {lt.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {isMobile ? (
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                startIcon={
+                  runningRefinement ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <PlayArrow />
+                  )
+                }
+                onClick={handleRunRefinement}
+                disabled={runningRefinement}
+                sx={{ flex: 1, minWidth: 120 }}
               >
-                {lotteryTypes.map((lt) => (
-                  <MenuItem key={lt.id} value={lt.id}>
-                    {lt.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={8}>
+                {runningRefinement ? "..." : "Refinar"}
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<TrendingUp />}
+                onClick={handleCalculateWeights}
+                disabled={!selectedLottery || loading}
+                sx={{ flex: 1, minWidth: 100 }}
+              >
+                Pesos
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                startIcon={<Science />}
+                onClick={handleEvolve}
+                disabled={!selectedLottery || loading}
+                sx={{ flex: 1, minWidth: 100 }}
+              >
+                Evoluir
+              </Button>
+              <IconButton
+                onClick={() => {
+                  loadWeights();
+                  loadHistory();
+                  loadStats();
+                }}
+                size="small"
+              >
+                <Refresh />
+              </IconButton>
+            </Stack>
+          ) : (
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <Button
                 variant="contained"
@@ -388,43 +514,117 @@ export default function RefinementDashboard() {
                 <Refresh />
               </IconButton>
             </Box>
-          </Grid>
-        </Grid>
+          )}
+        </Stack>
       </Paper>
 
-      {/* Weights Table */}
+      {/* Weights Table - Mobile Cards */}
       <Accordion defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <EmojiEvents />
-            <Typography variant="h6">
-              Ranking de Estratégias (Pesos Atuais)
+            <Typography variant={isMobile ? "subtitle1" : "h6"}>
+              Ranking de Estratégias
             </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails sx={{ p: { xs: 1, md: 2 } }}>
           {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
               <CircularProgress />
             </Box>
           ) : weights.length === 0 ? (
-            <Alert severity="info">
-              Nenhum peso calculado ainda. Execute o refinamento ou valide
-              algumas predições primeiro.
+            <Alert
+              severity="info"
+              sx={{ fontSize: { xs: "0.8rem", md: "1rem" } }}
+            >
+              Nenhum peso calculado. Execute o refinamento primeiro.
             </Alert>
+          ) : isMobile ? (
+            // Mobile: Card List
+            <Stack spacing={1.5}>
+              {weights.map((w, index) => (
+                <Card key={w.id} variant="outlined" sx={{ p: 1.5 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 1,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography variant="h6">
+                        {index === 0
+                          ? "🥇"
+                          : index === 1
+                          ? "🥈"
+                          : index === 2
+                          ? "🥉"
+                          : `${index + 1}º`}
+                      </Typography>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        {w.strategy_name}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={`${(w.weight * 100).toFixed(0)}%`}
+                      size="small"
+                      sx={{
+                        bgcolor: getWeightColor(w.weight),
+                        color: "white",
+                        fontWeight: "bold",
+                      }}
+                    />
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={w.weight * 100}
+                    sx={{
+                      height: 6,
+                      borderRadius: 3,
+                      mb: 1,
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: getWeightColor(w.weight),
+                      },
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: 0.5,
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Confiança: {(w.confidence * 100).toFixed(0)}%
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Média: {parseFloat(String(w.avg_hits)).toFixed(1)} hits
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {w.total_predictions} testes
+                    </Typography>
+                  </Box>
+                </Card>
+              ))}
+            </Stack>
           ) : (
+            // Desktop: Table
             <TableContainer>
-              <Table>
+              <Table size="small">
                 <TableHead>
                   <TableRow>
                     <TableCell>#</TableCell>
                     <TableCell>Estratégia</TableCell>
                     <TableCell align="center">Peso</TableCell>
                     <TableCell align="center">Confiança</TableCell>
-                    <TableCell align="center">Taxa de Acerto</TableCell>
-                    <TableCell align="center">Média de Hits</TableCell>
-                    <TableCell align="center">Predições</TableCell>
-                    <TableCell>Última Atualização</TableCell>
+                    <TableCell align="center">Taxa</TableCell>
+                    <TableCell align="center">Média</TableCell>
+                    <TableCell align="center">Testes</TableCell>
+                    <TableCell>Atualização</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -440,7 +640,7 @@ export default function RefinementDashboard() {
                           : index + 1}
                       </TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2">
+                        <Typography variant="body2">
                           {w.strategy_name}
                         </Typography>
                       </TableCell>
@@ -459,17 +659,17 @@ export default function RefinementDashboard() {
                               variant="determinate"
                               value={w.weight * 100}
                               sx={{
-                                width: 100,
-                                height: 10,
-                                borderRadius: 5,
+                                width: 80,
+                                height: 8,
+                                borderRadius: 4,
                                 bgcolor: "rgba(255,255,255,0.1)",
                                 "& .MuiLinearProgress-bar": {
                                   bgcolor: getWeightColor(w.weight),
                                 },
                               }}
                             />
-                            <Typography variant="body2" sx={{ minWidth: 50 }}>
-                              {(w.weight * 100).toFixed(1)}%
+                            <Typography variant="caption" sx={{ minWidth: 40 }}>
+                              {(w.weight * 100).toFixed(0)}%
                             </Typography>
                           </Box>
                         </Tooltip>
@@ -496,7 +696,7 @@ export default function RefinementDashboard() {
                         </Typography>
                       </TableCell>
                       <TableCell align="center">
-                        {w.total_predictions} ({w.successful_predictions} ✓)
+                        {w.total_predictions}
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
@@ -512,32 +712,70 @@ export default function RefinementDashboard() {
         </AccordionDetails>
       </Accordion>
 
-      {/* History */}
+      {/* History - Mobile Optimized */}
       <Accordion sx={{ mt: 2 }}>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Timeline />
-            <Typography variant="h6">Histórico de Refinamento</Typography>
+            <Typography variant={isMobile ? "subtitle1" : "h6"}>
+              Histórico
+            </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails sx={{ p: { xs: 1, md: 2 } }}>
           {history.length === 0 ? (
-            <Alert severity="info">
-              Nenhum histórico de refinamento ainda.
+            <Alert
+              severity="info"
+              sx={{ fontSize: { xs: "0.8rem", md: "1rem" } }}
+            >
+              Nenhum histórico ainda.
             </Alert>
+          ) : isMobile ? (
+            // Mobile: Simplified List
+            <Stack spacing={1}>
+              {history.slice(0, 10).map((h) => {
+                const variation = (h.new_weight - h.previous_weight) * 100;
+                return (
+                  <Card key={h.id} variant="outlined" sx={{ p: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="body2" fontWeight="bold">
+                          {h.strategy_name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {h.lottery_name} • {formatDate(h.created_at)}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={`${variation >= 0 ? "+" : ""}${variation.toFixed(
+                          1
+                        )}%`}
+                        size="small"
+                        color={variation > 0 ? "success" : "error"}
+                      />
+                    </Box>
+                  </Card>
+                );
+              })}
+            </Stack>
           ) : (
+            // Desktop: Table
             <TableContainer>
-              <Table>
+              <Table size="small">
                 <TableHead>
                   <TableRow>
                     <TableCell>Data</TableCell>
                     <TableCell>Loteria</TableCell>
                     <TableCell>Estratégia</TableCell>
-                    <TableCell align="center">Peso Anterior</TableCell>
-                    <TableCell align="center">→</TableCell>
-                    <TableCell align="center">Novo Peso</TableCell>
+                    <TableCell align="center">Anterior</TableCell>
+                    <TableCell align="center">Novo</TableCell>
                     <TableCell align="center">Variação</TableCell>
-                    <TableCell>Motivo</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -555,7 +793,6 @@ export default function RefinementDashboard() {
                         <TableCell align="center">
                           {(h.previous_weight * 100).toFixed(1)}%
                         </TableCell>
-                        <TableCell align="center">→</TableCell>
                         <TableCell align="center">
                           {(h.new_weight * 100).toFixed(1)}%
                         </TableCell>
@@ -568,11 +805,6 @@ export default function RefinementDashboard() {
                             color={variation > 0 ? "success" : "error"}
                           />
                         </TableCell>
-                        <TableCell>
-                          <Typography variant="caption" color="text.secondary">
-                            {h.change_reason}
-                          </Typography>
-                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -583,10 +815,10 @@ export default function RefinementDashboard() {
         </AccordionDetails>
       </Accordion>
 
-      {/* Last Refinement Job */}
+      {/* Last Refinement Job - Mobile Optimized */}
       {stats?.lastRefinementJob && (
-        <Paper sx={{ p: 2, mt: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
+        <Paper sx={{ p: 2, mt: 2 }}>
+          <Typography variant={isMobile ? "subtitle1" : "h6"} sx={{ mb: 1.5 }}>
             Último Refinamento
           </Typography>
           <Grid container spacing={2}>
@@ -597,6 +829,7 @@ export default function RefinementDashboard() {
               <Box>
                 <Chip
                   label={stats.lastRefinementJob.status}
+                  size="small"
                   color={
                     stats.lastRefinementJob.status === "completed"
                       ? "success"
@@ -607,17 +840,17 @@ export default function RefinementDashboard() {
             </Grid>
             <Grid item xs={6} md={3}>
               <Typography variant="caption" color="text.secondary">
-                Iniciado em
+                Iniciado
               </Typography>
-              <Typography>
+              <Typography variant="body2">
                 {formatDate(stats.lastRefinementJob.started_at)}
               </Typography>
             </Grid>
             <Grid item xs={6} md={3}>
               <Typography variant="caption" color="text.secondary">
-                Finalizado em
+                Finalizado
               </Typography>
-              <Typography>
+              <Typography variant="body2">
                 {formatDate(stats.lastRefinementJob.finished_at)}
               </Typography>
             </Grid>
@@ -630,12 +863,32 @@ export default function RefinementDashboard() {
                   ? `${
                       JSON.parse(stats.lastRefinementJob.results)?.lotteries
                         ?.length || 0
-                    } loterias processadas`
+                    } loterias`
                   : "-"}
               </Typography>
             </Grid>
           </Grid>
         </Paper>
+      )}
+
+      {/* FAB for mobile quick refresh */}
+      {isMobile && (
+        <Fab
+          color="primary"
+          size="medium"
+          onClick={() => {
+            loadWeights();
+            loadHistory();
+            loadStats();
+          }}
+          sx={{
+            position: "fixed",
+            bottom: 16,
+            right: 16,
+          }}
+        >
+          <Refresh />
+        </Fab>
       )}
     </Box>
   );

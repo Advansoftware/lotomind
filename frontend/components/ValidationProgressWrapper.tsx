@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -80,10 +80,31 @@ export function ValidationProgressWrapper({
 
   const { isConnected, subscribe, on } = useWebSocket();
 
+  const loadJobStatus = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/validation/jobs/${jobId}`);
+      setProgress({
+        jobId: response.data.id,
+        status: response.data.status,
+        progressCurrent: response.data.progressCurrent || 0,
+        progressTotal: response.data.progressTotal || 1,
+        progressPercentage: response.data.progressPercentage || 0,
+        currentConcurso: response.data.currentConcurso,
+        currentStrategy: response.data.currentStrategy,
+        statistics: response.data.statistics,
+      });
+    } catch (error) {
+      console.error("Error loading job status:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [jobId]);
+
   // Load initial job status
   useEffect(() => {
     loadJobStatus();
-  }, [jobId]);
+  }, [loadJobStatus]);
 
   // Subscribe to WebSocket updates
   useEffect(() => {
@@ -121,27 +142,6 @@ export function ValidationProgressWrapper({
       unsubscribeHandler();
     };
   }, [isConnected, jobId, onComplete, subscribe, on]);
-
-  const loadJobStatus = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get(`/validation/jobs/${jobId}`);
-      setProgress({
-        jobId: response.data.id,
-        status: response.data.status,
-        progressCurrent: response.data.progressCurrent || 0,
-        progressTotal: response.data.progressTotal || 1,
-        progressPercentage: response.data.progressPercentage || 0,
-        currentConcurso: response.data.currentConcurso,
-        currentStrategy: response.data.currentStrategy,
-        statistics: response.data.statistics,
-      });
-    } catch (error) {
-      console.error("Error loading job status:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStatusIcon = () => {
     if (!progress) return null;

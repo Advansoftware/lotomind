@@ -17,7 +17,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import HistoryIcon from "@mui/icons-material/History";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ValidationProgressWrapper } from "./ValidationProgressWrapper";
 import { PredictionList } from "./PredictionList";
 import { StrategyRanking } from "./StrategyRanking";
@@ -75,11 +75,7 @@ export function ValidationDashboard({
   const lotteryConfig = getLotteryConfig(lotteryType);
   const fullTheme = getLotteryTheme(lotteryType);
 
-  useEffect(() => {
-    loadStats();
-  }, [lotteryType]);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -158,7 +154,11 @@ export function ValidationDashboard({
     } finally {
       setLoading(false);
     }
-  };
+  }, [lotteryType]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   const startValidation = async () => {
     try {
@@ -360,8 +360,8 @@ export function ValidationDashboard({
                   Nenhuma validação em andamento
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={3}>
-                  Clique em "Iniciar Validação" para começar a validar as
-                  predições históricas
+                  Clique em &quot;Iniciar Validação&quot; para começar a validar
+                  as predições históricas
                 </Typography>
                 <Button
                   variant="contained"
