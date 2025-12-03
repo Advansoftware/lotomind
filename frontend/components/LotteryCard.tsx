@@ -45,11 +45,7 @@ export function LotteryCard({ draw, lotteryTheme }: LotteryCardProps) {
           mb={3}
         >
           <Box display="flex" alignItems="center" gap={1}>
-            <Typography
-              variant="h6"
-              fontWeight="800"
-              sx={{ color: primaryColor }}
-            >
+            <Typography variant="h6" fontWeight="800" sx={{ color: "#ffffff" }}>
               Concurso {draw.concurso}
             </Typography>
           </Box>

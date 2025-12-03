@@ -225,8 +225,17 @@ export function ValidationDashboard({
             onClick={startValidation}
             disabled={isValidating}
             sx={{
-              bgcolor: "rgba(255,255,255,0.2)",
-              "&:hover": { bgcolor: "rgba(255,255,255,0.3)" },
+              bgcolor: "#10b981",
+              color: "#ffffff",
+              fontWeight: "bold",
+              px: 3,
+              "&:hover": {
+                bgcolor: "#059669",
+              },
+              "&:disabled": {
+                bgcolor: "rgba(255,255,255,0.3)",
+                color: "rgba(255,255,255,0.7)",
+              },
             }}
           >
             {isValidating ? "Validando..." : "Iniciar Validação"}
@@ -355,12 +364,18 @@ export function ValidationDashboard({
                   predições históricas
                 </Typography>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   startIcon={<PlayArrowIcon />}
                   onClick={startValidation}
                   sx={{
-                    borderColor: lotteryTheme.primary,
-                    color: lotteryTheme.primary,
+                    bgcolor: "#10b981",
+                    color: "#ffffff",
+                    fontWeight: "bold",
+                    px: 4,
+                    py: 1.5,
+                    "&:hover": {
+                      bgcolor: "#059669",
+                    },
                   }}
                 >
                   Iniciar Validação

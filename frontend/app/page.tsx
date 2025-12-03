@@ -517,10 +517,19 @@ function HomeContent() {
                   📊 Últimos Sorteios
                 </Typography>
                 <Button
+                  variant="outlined"
                   startIcon={<RefreshIcon />}
                   size="small"
                   onClick={loadData}
-                  sx={{ color: lotteryTheme.colors.primary }}
+                  sx={{
+                    borderColor: lotteryTheme.colors.primary,
+                    color: "#ffffff",
+                    fontWeight: "bold",
+                    "&:hover": {
+                      borderColor: lotteryTheme.colors.primary,
+                      bgcolor: `${lotteryTheme.colors.primary}20`,
+                    },
+                  }}
                 >
                   Atualizar
                 </Button>
@@ -568,10 +577,11 @@ function HomeContent() {
                   size="small"
                   sx={{
                     borderColor: lotteryTheme.colors.primary,
-                    color: lotteryTheme.colors.primary,
+                    color: "#ffffff",
+                    fontWeight: "bold",
                     "&:hover": {
-                      borderColor: lotteryTheme.colors.dark,
-                      bgcolor: `${lotteryTheme.colors.primary}10`,
+                      borderColor: lotteryTheme.colors.primary,
+                      bgcolor: `${lotteryTheme.colors.primary}20`,
                     },
                   }}
                 >
