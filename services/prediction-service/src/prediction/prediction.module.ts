@@ -8,6 +8,8 @@ import { BacktestService } from './backtest.service';
 import { StrategySelector } from './strategy-selector.service';
 import { ValidationService } from './validation.service';
 import { ValidationController } from './validation.controller';
+import { AutoRefinementService } from './auto-refinement.service';
+import { RefinementController } from './refinement.controller';
 
 // Import entities
 import { Prediction } from './entities/prediction.entity';
@@ -54,12 +56,13 @@ import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
       },
     ]),
   ],
-  controllers: [PredictionController, ValidationController],
+  controllers: [PredictionController, ValidationController, RefinementController],
   providers: [
     PredictionService,
     BacktestService,
     StrategySelector,
     ValidationService,
+    AutoRefinementService,
     // All 20 strategies
     FrequencyStrategy,
     DelayStrategy,
@@ -82,6 +85,6 @@ import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
     CycleDetectionStrategy,
     AdaptiveHybridStrategy,
   ],
-  exports: [PredictionService, ValidationService],
+  exports: [PredictionService, ValidationService, AutoRefinementService],
 })
 export class PredictionModule { }

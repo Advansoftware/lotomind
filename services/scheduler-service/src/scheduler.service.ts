@@ -176,6 +176,80 @@ export class SchedulerService {
     }
   }
 
+  @Cron('0 22 * * 0') // Every Sunday at 22:00 - Run refinement cycle
+  async runWeeklyRefinement() {
+    this.logger.log('🧬 Running weekly auto-refinement cycle...');
+
+    const predictionServiceUrl = process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002';
+
+    try {
+      // 1. Run full refinement cycle (calculates weights for all lotteries)
+      const refinementResponse = await firstValueFrom(
+        this.httpService.post(`${predictionServiceUrl}/refinement/run`)
+      );
+
+      this.logger.log(`✅ Refinement cycle completed: ${JSON.stringify(refinementResponse.data)}`);
+
+      // 2. Run evolution for each lottery
+      for (const config of this.lotteryConfigs) {
+        try {
+          await firstValueFrom(
+            this.httpService.post(`${predictionServiceUrl}/refinement/evolve/by-slug/${config.name}`)
+          );
+          this.logger.log(`🧬 Evolution completed for ${config.name}`);
+        } catch (error) {
+          this.logger.error(`❌ Error in evolution for ${config.name}: ${error.message}`);
+        }
+      }
+
+      // 3. Cleanup old data (keeps last 90 days)
+      await firstValueFrom(
+        this.httpService.post(`${predictionServiceUrl}/refinement/cleanup?days=90`)
+      );
+      this.logger.log('🧹 Cleanup completed');
+
+    } catch (error) {
+      this.logger.error(`❌ Error in weekly refinement: ${error.message}`);
+    }
+  }
+
+  @Cron('0 22 * * 1,3,5') // Mon, Wed, Fri at 22:00 - Quick refinement after validations
+  async runPostValidationRefinement() {
+    this.logger.log('⚡ Running post-validation quick refinement...');
+
+    const predictionServiceUrl = process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002';
+
+    try {
+      // Run refinement only for lotteries that had draws today
+      const today = new Date().getDay();
+
+      for (const config of this.lotteryConfigs) {
+        if (config.drawDays.includes(today)) {
+          try {
+            // Calculate new weights based on recent validation results
+            const response = await firstValueFrom(
+              this.httpService.get(`${predictionServiceUrl}/lottery/types`)
+            );
+
+            const lotteries = response.data || [];
+            const lottery = lotteries.find((l: any) => l.slug === config.name);
+
+            if (lottery) {
+              await firstValueFrom(
+                this.httpService.post(`${predictionServiceUrl}/refinement/calculate/${lottery.id}`)
+              );
+              this.logger.log(`⚡ Quick refinement completed for ${config.name}`);
+            }
+          } catch (error) {
+            this.logger.error(`❌ Error in quick refinement for ${config.name}: ${error.message}`);
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error(`❌ Error in post-validation refinement: ${error.message}`);
+    }
+  }
+
   @Cron('0 0 30 12 *') // December 30th - Special handling for Mega da Virada
   async handleMegaDaVirada() {
     this.logger.log('🎆 Generating special predictions for Mega da Virada!');

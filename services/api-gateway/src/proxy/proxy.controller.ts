@@ -101,4 +101,28 @@ export class ProxyController {
       true,
     );
   }
+
+  // Refinement routes - base path
+  @All('refinement')
+  async proxyRefinementBase(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/refinement',
+      true,
+    );
+  }
+
+  // Refinement routes - with subpaths
+  @All('refinement/*')
+  async proxyRefinement(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/refinement',
+      true,
+    );
+  }
 }
