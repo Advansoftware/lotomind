@@ -56,6 +56,7 @@ function HomeContent() {
     message: "",
     severity: "info",
   });
+  const [generatingPrediction, setGeneratingPrediction] = useState(false);
   const theme = useTheme();
   const searchParams = useSearchParams();
   const lotteryType = searchParams.get("lotteryType") || "megasena";
@@ -196,6 +197,41 @@ function HomeContent() {
     }
   };
 
+  const handleGeneratePrediction = async () => {
+    try {
+      setGeneratingPrediction(true);
+      setSnackbar({
+        open: true,
+        message: "Gerando nova predição...",
+        severity: "info",
+      });
+
+      const response = await api.post("/predictions/generate", {
+        lotteryType,
+      });
+
+      if (response.data) {
+        // Add new prediction to the list
+        setPredictions((prev) => [response.data, ...prev].slice(0, 6));
+
+        setSnackbar({
+          open: true,
+          message: `Predição gerada com sucesso! Estratégia: ${response.data.strategyName}`,
+          severity: "success",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error generating prediction:", error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || "Erro ao gerar predição",
+        severity: "error",
+      });
+    } finally {
+      setGeneratingPrediction(false);
+    }
+  };
+
   if (loading) {
     return (
       <Box
@@ -283,7 +319,18 @@ function HomeContent() {
                 <Button
                   variant="contained"
                   size="large"
-                  startIcon={<RocketLaunchIcon />}
+                  startIcon={
+                    generatingPrediction ? (
+                      <CircularProgress
+                        size={20}
+                        sx={{ color: lotteryTheme.colors.dark }}
+                      />
+                    ) : (
+                      <RocketLaunchIcon />
+                    )
+                  }
+                  onClick={handleGeneratePrediction}
+                  disabled={generatingPrediction}
                   sx={{
                     bgcolor: "white",
                     color: lotteryTheme.colors.dark,
@@ -296,10 +343,14 @@ function HomeContent() {
                       transform: "translateY(-2px)",
                       boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
                     },
+                    "&:disabled": {
+                      bgcolor: "rgba(255,255,255,0.7)",
+                      color: lotteryTheme.colors.dark,
+                    },
                     transition: "all 0.3s ease",
                   }}
                 >
-                  Gerar Nova Predição
+                  {generatingPrediction ? "Gerando..." : "Gerar Nova Predição"}
                 </Button>
                 <Button
                   variant="outlined"

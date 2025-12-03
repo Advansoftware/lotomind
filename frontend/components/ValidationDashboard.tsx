@@ -91,13 +91,14 @@ export function ValidationDashboard({
 
       if (rankings.data?.length > 0) {
         const totalValidated = rankings.data.reduce(
-          (sum: number, s: { totalPredictions: number }) =>
-            sum + s.totalPredictions,
+          (sum: number, s: { totalPredictions: number | string }) =>
+            sum + (Number(s.totalPredictions) || 0),
           0
         );
         const avgHits =
           rankings.data.reduce(
-            (sum: number, s: { avgHits: number }) => sum + s.avgHits,
+            (sum: number, s: { avgHits: number | string }) =>
+              sum + (Number(s.avgHits) || 0),
             0
           ) / rankings.data.length;
 
@@ -202,7 +203,7 @@ export function ValidationDashboard({
                   Total Validado
                 </Typography>
                 <Typography variant="h5" fontWeight="bold">
-                  {stats.totalValidated.toLocaleString()}
+                  {Number(stats.totalValidated || 0).toLocaleString()}
                 </Typography>
               </Paper>
             </Grid>
@@ -214,7 +215,7 @@ export function ValidationDashboard({
                   Média de Acertos
                 </Typography>
                 <Typography variant="h5" fontWeight="bold">
-                  {stats.avgHits.toFixed(2)}
+                  {Number(stats.avgHits || 0).toFixed(2)}
                 </Typography>
               </Paper>
             </Grid>

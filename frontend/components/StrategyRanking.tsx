@@ -173,7 +173,7 @@ function StrategyCard({
             fontWeight="bold"
             color={lotteryTheme.primary}
           >
-            {strategy.score.toFixed(1)}
+            {Number(strategy.score || 0).toFixed(1)}
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Score
@@ -194,7 +194,7 @@ function StrategyCard({
                 Média de Acertos
               </Typography>
               <Typography fontWeight="bold">
-                {strategy.avgHits.toFixed(2)}
+                {Number(strategy.avgHits || 0).toFixed(2)}
               </Typography>
             </Grid>
 
@@ -203,7 +203,7 @@ function StrategyCard({
               <Typography variant="caption" color="text.secondary">
                 Máx. Acertos
               </Typography>
-              <Typography fontWeight="bold">{strategy.maxHits}</Typography>
+              <Typography fontWeight="bold">{strategy.maxHits || 0}</Typography>
             </Grid>
 
             {/* Confiança Média */}
@@ -212,7 +212,7 @@ function StrategyCard({
                 Confiança Média
               </Typography>
               <Typography fontWeight="bold">
-                {(strategy.avgConfidence * 100).toFixed(1)}%
+                {(Number(strategy.avgConfidence || 0) * 100).toFixed(1)}%
               </Typography>
             </Grid>
 
@@ -222,7 +222,7 @@ function StrategyCard({
                 Taxa 4+ Acertos
               </Typography>
               <Typography fontWeight="bold">
-                {(strategy.hitRate4Plus * 100).toFixed(2)}%
+                {(Number(strategy.hitRate4Plus || 0) * 100).toFixed(2)}%
               </Typography>
             </Grid>
           </Grid>
@@ -234,7 +234,7 @@ function StrategyCard({
               <Box flex={1}>
                 <LinearProgress
                   variant="determinate"
-                  value={strategy.hitRate4Plus * 100}
+                  value={Number(strategy.hitRate4Plus || 0) * 100}
                   sx={{
                     height: 8,
                     borderRadius: 4,
@@ -246,7 +246,7 @@ function StrategyCard({
                 />
               </Box>
               <Typography variant="caption" width={50} textAlign="right">
-                {(strategy.hitRate4Plus * 100).toFixed(2)}%
+                {(Number(strategy.hitRate4Plus || 0) * 100).toFixed(2)}%
               </Typography>
             </Box>
 
@@ -255,7 +255,7 @@ function StrategyCard({
               <Box flex={1}>
                 <LinearProgress
                   variant="determinate"
-                  value={strategy.hitRate5Plus * 100}
+                  value={Number(strategy.hitRate5Plus || 0) * 100}
                   sx={{
                     height: 8,
                     borderRadius: 4,
@@ -267,7 +267,7 @@ function StrategyCard({
                 />
               </Box>
               <Typography variant="caption" width={50} textAlign="right">
-                {(strategy.hitRate5Plus * 100).toFixed(2)}%
+                {(Number(strategy.hitRate5Plus || 0) * 100).toFixed(2)}%
               </Typography>
             </Box>
 
@@ -276,7 +276,7 @@ function StrategyCard({
               <Box flex={1}>
                 <LinearProgress
                   variant="determinate"
-                  value={strategy.hitRate6 * 100}
+                  value={Number(strategy.hitRate6 || 0) * 100}
                   sx={{
                     height: 8,
                     borderRadius: 4,
@@ -288,7 +288,7 @@ function StrategyCard({
                 />
               </Box>
               <Typography variant="caption" width={50} textAlign="right">
-                {(strategy.hitRate6 * 100).toFixed(4)}%
+                {(Number(strategy.hitRate6 || 0) * 100).toFixed(4)}%
               </Typography>
             </Box>
           </Box>
@@ -315,7 +315,12 @@ export function StrategyRanking({
       const response = await api.get(
         `/predictions/validation/strategy-ranking?lotteryType=${lotteryType}`
       );
-      setStrategies(response.data);
+      // Sort by score descending (best strategies first)
+      const sortedStrategies = (response.data || []).sort(
+        (a: StrategyStats, b: StrategyStats) =>
+          (Number(b.score) || 0) - (Number(a.score) || 0)
+      );
+      setStrategies(sortedStrategies);
     } catch (error) {
       console.error("Error loading strategies:", error);
     } finally {

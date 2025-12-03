@@ -98,7 +98,7 @@ function Row({
         </TableCell>
         <TableCell>
           <Typography variant="body2" color="text.secondary">
-            {(result.confidenceScore * 100).toFixed(1)}%
+            {(Number(result.confidenceScore || 0) * 100).toFixed(1)}%
           </Typography>
         </TableCell>
       </TableRow>
@@ -175,7 +175,7 @@ function Row({
                   <Box display="flex" gap={2} flexWrap="wrap">
                     <Chip
                       label={`Confiança: ${(
-                        result.confidenceScore * 100
+                        Number(result.confidenceScore || 0) * 100
                       ).toFixed(1)}%`}
                       variant="outlined"
                       size="small"
@@ -238,7 +238,12 @@ export function PredictionList({
       }
 
       const response = await api.get(`/validation/results?${params}`);
-      setResults(response.data.data);
+      // Sort by hits descending (best results first)
+      const sortedResults = (response.data.data || []).sort(
+        (a: ValidationResult, b: ValidationResult) =>
+          (Number(b.hits) || 0) - (Number(a.hits) || 0)
+      );
+      setResults(sortedResults);
       setTotal(response.data.pagination.total);
     } catch (error) {
       console.error("Error loading results:", error);

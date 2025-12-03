@@ -145,7 +145,8 @@ export function PredictionCard({
               color="text.secondary"
               sx={{ opacity: 0.7 }}
             >
-              Confiança da IA: {(prediction.confidenceScore * 100).toFixed(1)}%
+              Confiança da IA:{" "}
+              {(Number(prediction.confidenceScore || 0) * 100).toFixed(1)}%
             </Typography>
           </Box>
         )}

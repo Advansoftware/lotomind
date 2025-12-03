@@ -255,12 +255,12 @@ export function ValidationProgressWrapper({
             fontWeight="bold"
             color={lotteryTheme.primary}
           >
-            {progress.progressPercentage.toFixed(1)}%
+            {Number(progress.progressPercentage || 0).toFixed(1)}%
           </Typography>
         </Box>
         <LinearProgress
           variant="determinate"
-          value={progress.progressPercentage}
+          value={Number(progress.progressPercentage) || 0}
           sx={{
             height: 10,
             borderRadius: 5,
@@ -346,7 +346,7 @@ export function ValidationProgressWrapper({
                   fontWeight="bold"
                   color={lotteryTheme.primary}
                 >
-                  {progress.statistics.avgHits.toFixed(2)}
+                  {Number(progress.statistics.avgHits || 0).toFixed(2)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   Média de Acertos

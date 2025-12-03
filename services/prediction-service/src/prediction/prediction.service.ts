@@ -235,7 +235,7 @@ export class PredictionService {
     try {
       const lotteryServiceUrl = process.env.LOTTERY_SERVICE_URL || 'http://lottery-service:3001';
       const response = await firstValueFrom(
-        this.httpService.get(`${lotteryServiceUrl}/lottery/draws`, {
+        this.httpService.get(`${lotteryServiceUrl}/draws`, {
           params: {
             lotteryType,
             limit: 500, // Get last 500 draws for analysis

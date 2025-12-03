@@ -106,7 +106,7 @@ export function DashboardMetrics({
         <MetricCard
           icon={<TrendingUpIcon sx={{ fontSize: 32 }} />}
           title="Precisão Média"
-          value={`${(metrics.avgAccuracy * 100).toFixed(1)}%`}
+          value={`${(Number(metrics.avgAccuracy || 0) * 100).toFixed(1)}%`}
           color="#00e676"
         />
       </Grid>
