@@ -248,11 +248,30 @@ export class PredictionService {
     // Get lottery config
     const config = this.getLotteryConfig(params.lotteryType);
 
-    // Parse historical draws
-    const parsedDraws = params.historicalDraws.map(draw => ({
-      ...draw,
-      numbers: typeof draw.numbers === 'string' ? JSON.parse(draw.numbers) : draw.numbers,
-    }));
+    // Parse historical draws and ensure numbers is always an array
+    const parsedDraws = params.historicalDraws
+      .map(draw => {
+        let numbers = draw.numbers;
+        if (typeof numbers === 'string') {
+          try {
+            numbers = JSON.parse(numbers);
+          } catch {
+            numbers = [];
+          }
+        }
+        if (!Array.isArray(numbers)) {
+          numbers = [];
+        }
+        return {
+          ...draw,
+          numbers,
+        };
+      })
+      .filter(draw => draw.numbers.length > 0); // Only include draws with valid numbers
+
+    if (parsedDraws.length < 5) {
+      throw new Error('Not enough valid historical data');
+    }
 
     // Generate prediction using the strategy
     const predictedNumbers = await strategy.predict(parsedDraws, config);

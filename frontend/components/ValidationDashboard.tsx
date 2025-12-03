@@ -102,11 +102,52 @@ export function ValidationDashboard({
             0
           ) / rankings.data.length;
 
+        // Find the best strategy: prioritize MaxHits (works for ALL lottery types)
+        // Mega-Sena, Quina, Lotofácil, Lotomania, Dupla Sena, Timemania, Dia de Sorte
+        interface StrategyData {
+          strategyName: string;
+          hitRate6?: number | string;
+          hitRate5Plus?: number | string;
+          hitRate4Plus?: number | string;
+          maxHits?: number | string;
+          avgHits?: number | string;
+        }
+
+        const bestStrategyData = rankings.data.reduce(
+          (best: StrategyData | null, s: StrategyData) => {
+            if (!best) return s;
+
+            // Priority 1: Max hits (closest to jackpot for ANY lottery)
+            const maxA = Number(best.maxHits) || 0;
+            const maxB = Number(s.maxHits) || 0;
+            if (maxB > maxA) return s;
+            if (maxA > maxB) return best;
+
+            // Priority 2: Rate of 4+ hits
+            const rate4A = Number(best.hitRate4Plus) || 0;
+            const rate4B = Number(s.hitRate4Plus) || 0;
+            if (rate4B > rate4A) return s;
+            if (rate4A > rate4B) return best;
+
+            // Priority 3: Rate of 5+ hits
+            const rate5A = Number(best.hitRate5Plus) || 0;
+            const rate5B = Number(s.hitRate5Plus) || 0;
+            if (rate5B > rate5A) return s;
+            if (rate5A > rate5B) return best;
+
+            // Priority 4: Average hits (tiebreaker)
+            const avgA = Number(best.avgHits) || 0;
+            const avgB = Number(s.avgHits) || 0;
+            return avgB > avgA ? s : best;
+          },
+          null
+        );
+
         setStats({
           totalValidated,
           avgHits,
           bestStrategy:
-            rankings.data[0]?.strategyName?.replace(/_/g, " ").toUpperCase() ||
+            bestStrategyData?.strategyName?.replace(/_/g, " ").toUpperCase() ||
             "N/A",
           lastValidation: new Date().toLocaleDateString("pt-BR"),
         });

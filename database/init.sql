@@ -209,7 +209,7 @@ INSERT INTO strategies (name, display_name, category, description) VALUES
 -- Machine Learning
 ('neural_network', 'Neural Network (LSTM)', 'ml', 'LSTM model for sequence prediction'),
 ('random_forest', 'Random Forest', 'ml', 'Ensemble of decision trees'),
-('clustering', 'K-Means Clustering', 'ml', 'Groups similar draw patterns'),
+('kmeans_clustering', 'K-Means Clustering', 'ml', 'Groups similar draw patterns'),
 
 -- Mathematical
 ('fibonacci', 'Fibonacci Sequence', 'mathematical', 'Applies Fibonacci patterns'),

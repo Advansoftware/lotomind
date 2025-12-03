@@ -31,11 +31,14 @@ export class NeuralNetworkStrategy {
       if (idx === 0) return null; // Skip first draw (no previous data)
 
       const prevDraw = historicalDraws[idx + 1];
+      if (!prevDraw || !prevDraw.numbers || !draw.numbers) return null;
+
       const input = this.extractFeatures(prevDraw, maxNumber);
       const target = Array(outputSize).fill(0);
 
       // Mark actual numbers as targets
-      draw.numbers.forEach((num: number) => {
+      const drawNumbers = Array.isArray(draw.numbers) ? draw.numbers : [];
+      drawNumbers.forEach((num: number) => {
         if (num >= minNumber && num <= maxNumber) {
           target[num - minNumber] = 1;
         }
@@ -74,6 +77,11 @@ export class NeuralNetworkStrategy {
     }
 
     // Prediction
+    if (!historicalDraws[0] || !historicalDraws[0].numbers) {
+      // Return random numbers if no valid data
+      return this.generateRandomNumbers(numbersToDraw, minNumber, maxNumber);
+    }
+
     const recentFeatures = this.extractFeatures(historicalDraws[0], maxNumber);
     const hiddenLayer = this.activate(
       this.matrixMultiply([recentFeatures], weightsInputHidden)[0],
@@ -132,37 +140,50 @@ export class NeuralNetworkStrategy {
     });
   }
 
+  private generateRandomNumbers(count: number, min: number, max: number): number[] {
+    const numbers: number[] = [];
+    while (numbers.length < count) {
+      const num = Math.floor(Math.random() * (max - min + 1)) + min;
+      if (!numbers.includes(num)) {
+        numbers.push(num);
+      }
+    }
+    return numbers.sort((a, b) => a - b);
+  }
+
   private extractFeatures(draw: any, maxNumber: number): number[] {
     const features = [];
+    const numbers = Array.isArray(draw.numbers) ? draw.numbers : [];
+    const len = numbers.length || 1;
 
     // Feature 1: Average number (normalized)
-    const avg = draw.numbers.reduce((a: number, b: number) => a + b, 0) / draw.numbers.length;
+    const avg = numbers.length > 0 ? numbers.reduce((a: number, b: number) => a + b, 0) / len : 30;
     features.push(avg / maxNumber);
 
     // Feature 2: Sum (normalized)
-    const sum = draw.numbers.reduce((a: number, b: number) => a + b, 0);
+    const sum = numbers.reduce((a: number, b: number) => a + b, 0);
     features.push(sum / (maxNumber * 6));
 
     // Feature 3: Odd count (normalized)
-    const oddCount = draw.numbers.filter((n: number) => n % 2 !== 0).length;
+    const oddCount = numbers.filter((n: number) => n % 2 !== 0).length;
     features.push(oddCount / 6);
 
     // Feature 4: Even count (normalized)
     features.push((6 - oddCount) / 6);
 
     // Feature 5: Min number (normalized)
-    const min = Math.min(...draw.numbers);
+    const min = numbers.length > 0 ? Math.min(...numbers) : 1;
     features.push(min / maxNumber);
 
     // Feature 6: Max number (normalized)
-    const max = Math.max(...draw.numbers);
+    const max = numbers.length > 0 ? Math.max(...numbers) : maxNumber;
     features.push(max / maxNumber);
 
     // Feature 7: Range (normalized)
     features.push((max - min) / maxNumber);
 
     // Feature 8: Consecutive count (normalized)
-    const sorted = [...draw.numbers].sort((a: number, b: number) => a - b);
+    const sorted = [...numbers].sort((a: number, b: number) => a - b);
     let consecutive = 0;
     for (let i = 0; i < sorted.length - 1; i++) {
       if (sorted[i + 1] - sorted[i] === 1) consecutive++;
@@ -170,7 +191,7 @@ export class NeuralNetworkStrategy {
     features.push(consecutive / 5);
 
     // Feature 9: Low numbers count (1-30)
-    const lowCount = draw.numbers.filter((n: number) => n <= 30).length;
+    const lowCount = numbers.filter((n: number) => n <= 30).length;
     features.push(lowCount / 6);
 
     // Feature 10: High numbers count (31-60)

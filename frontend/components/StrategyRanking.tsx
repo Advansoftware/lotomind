@@ -315,10 +315,33 @@ export function StrategyRanking({
       const response = await api.get(
         `/validation/strategy-ranking?lotteryType=${lotteryType}`
       );
-      // Sort by score descending (best strategies first)
+      // Sort by: 1) Max hits (closest to jackpot), 2) High hit rates, 3) Average hits
+      // Works for all lottery types: Mega-Sena, Quina, Lotofácil, etc.
       const sortedStrategies = (response.data || []).sort(
-        (a: StrategyStats, b: StrategyStats) =>
-          (Number(b.score) || 0) - (Number(a.score) || 0)
+        (a: StrategyStats, b: StrategyStats) => {
+          // Priority 1: Max hits achieved (closest to jackpot for ANY lottery)
+          const maxA = Number(a.maxHits) || 0;
+          const maxB = Number(b.maxHits) || 0;
+          if (maxA !== maxB) return maxB - maxA;
+
+          // Priority 2: Rate of high hits (4+ for most lotteries)
+          const rate4A = Number(a.hitRate4Plus) || 0;
+          const rate4B = Number(b.hitRate4Plus) || 0;
+          if (rate4A !== rate4B) return rate4B - rate4A;
+
+          // Priority 3: Rate of 5+ hits
+          const rate5A = Number(a.hitRate5Plus) || 0;
+          const rate5B = Number(b.hitRate5Plus) || 0;
+          if (rate5A !== rate5B) return rate5B - rate5A;
+
+          // Priority 4: Perfect match rate (jackpot)
+          const rate6A = Number(a.hitRate6) || 0;
+          const rate6B = Number(b.hitRate6) || 0;
+          if (rate6A !== rate6B) return rate6B - rate6A;
+
+          // Priority 5: Average hits (tiebreaker)
+          return (Number(b.avgHits) || 0) - (Number(a.avgHits) || 0);
+        }
       );
       setStrategies(sortedStrategies);
     } catch (error) {

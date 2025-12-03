@@ -1,9 +1,10 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom, map } from 'rxjs';
+import { PredictionService } from './prediction.service';
 
 export interface ValidationJob {
   id: number;
@@ -58,6 +59,8 @@ export class ValidationService {
     private dataSource: DataSource,
     private httpService: HttpService,
     @Inject('PREDICTION_SERVICE') private client: ClientProxy,
+    @Inject(forwardRef(() => PredictionService))
+    private predictionService: PredictionService,
   ) { }
 
   /**
@@ -310,7 +313,7 @@ export class ValidationService {
   }
 
   /**
-   * Generate prediction for validation using prediction service
+   * Generate prediction for validation using prediction service directly
    */
   private async generatePredictionForValidation(
     lotteryType: string,
@@ -318,18 +321,16 @@ export class ValidationService {
     trainingDraws: any[]
   ): Promise<number[]> {
     try {
-      const predictionServiceUrl = process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002';
+      // Call PredictionService directly instead of HTTP
+      const result = await this.predictionService.generatePredictionForValidation({
+        lotteryType,
+        strategyName,
+        historicalDraws: trainingDraws.slice(-100), // Last 100 draws
+      });
 
-      const response = await firstValueFrom(
-        this.httpService.post(`${predictionServiceUrl}/predictions/generate-for-validation`, {
-          lotteryType,
-          strategyName,
-          historicalDraws: trainingDraws.slice(-100), // Last 100 draws
-        }).pipe(map(res => res.data))
-      );
-
-      return response.predictedNumbers;
+      return result.predictedNumbers;
     } catch (error) {
+      this.logger.warn(`Strategy ${strategyName} failed: ${error.message}, using fallback`);
       // Fallback: generate simple prediction based on frequency
       return this.generateFallbackPrediction(trainingDraws, lotteryType);
     }
