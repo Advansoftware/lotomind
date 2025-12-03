@@ -16,7 +16,7 @@ import { Prediction } from './entities/prediction.entity';
 import { BacktestResult } from './entities/backtest-result.entity';
 import { StrategyPerformance } from './entities/strategy-performance.entity';
 
-// Import all strategies
+// Import all strategies (20 original)
 import { FrequencyStrategy } from '../strategies/frequency.strategy';
 import { DelayStrategy } from '../strategies/delay.strategy';
 import { HotColdStrategy } from '../strategies/hot-cold.strategy';
@@ -38,10 +38,21 @@ import { NeuralNetworkStrategy } from '../strategies/neural-network.strategy';
 import { CycleDetectionStrategy } from '../strategies/cycle-detection.strategy';
 import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
 
+// Import new advanced ML strategies (3 new)
+import { LSTMStrategy } from '../strategies/lstm-deep.strategy';
+import { GradientBoostingStrategy } from '../strategies/gradient-boosting.strategy';
+import { WeightedEnsembleStrategy } from '../strategies/weighted-ensemble.strategy';
+
+// Import analysis and closure modules
+import { AnalysisModule } from '../analysis/analysis.module';
+import { ClosureModule } from '../closure/closure.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Prediction, BacktestResult, StrategyPerformance]),
     HttpModule,
+    AnalysisModule,
+    ClosureModule,
     ClientsModule.register([
       {
         name: 'PREDICTION_SERVICE',
@@ -63,7 +74,7 @@ import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
     StrategySelector,
     ValidationService,
     AutoRefinementService,
-    // All 20 strategies
+    // All 20 original strategies
     FrequencyStrategy,
     DelayStrategy,
     HotColdStrategy,
@@ -84,6 +95,10 @@ import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
     NeuralNetworkStrategy,
     CycleDetectionStrategy,
     AdaptiveHybridStrategy,
+    // 3 New advanced ML strategies
+    LSTMStrategy,
+    GradientBoostingStrategy,
+    WeightedEnsembleStrategy,
   ],
   exports: [PredictionService, ValidationService, AutoRefinementService],
 })
