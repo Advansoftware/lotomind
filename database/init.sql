@@ -532,3 +532,133 @@ CREATE TABLE IF NOT EXISTS sync_jobs (
     INDEX idx_job_type (job_type),
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- VALIDATION JOBS TABLE - For async validation with progress tracking
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS validation_jobs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lottery_type_id INT NOT NULL,
+    job_type VARCHAR(50) NOT NULL DEFAULT 'full_backtest',
+    start_concurso INT,
+    end_concurso INT,
+    strategies_to_test JSON,
+    status ENUM('queued', 'running', 'completed', 'failed', 'cancelled') DEFAULT 'queued',
+    progress_total INT DEFAULT 0,
+    progress_current INT DEFAULT 0,
+    progress_percentage DECIMAL(5,2) DEFAULT 0,
+    current_concurso INT,
+    current_strategy VARCHAR(100),
+    started_at TIMESTAMP NULL,
+    completed_at TIMESTAMP NULL,
+    estimated_completion TIMESTAMP NULL,
+    total_predictions_tested INT DEFAULT 0,
+    total_hits INT DEFAULT 0,
+    avg_hits DECIMAL(5,2) DEFAULT 0,
+    best_strategy_id INT,
+    best_hit_count INT DEFAULT 0,
+    execution_time_seconds INT,
+    error_message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_status (status),
+    INDEX idx_lottery_type (lottery_type_id),
+    FOREIGN KEY (lottery_type_id) REFERENCES lottery_types(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- VALIDATION RESULTS TABLE - Individual validation results per strategy/concurso
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS validation_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    validation_job_id INT,
+    lottery_type_id INT NOT NULL,
+    strategy_id INT NOT NULL,
+    concurso INT NOT NULL,
+    predicted_numbers JSON NOT NULL,
+    actual_numbers JSON NOT NULL,
+    matched_numbers JSON,
+    hits INT DEFAULT 0,
+    confidence_score DECIMAL(5,4) DEFAULT 0,
+    draws_used_for_prediction INT DEFAULT 0,
+    is_perfect_match BOOLEAN DEFAULT FALSE,
+    is_quina BOOLEAN DEFAULT FALSE,
+    is_quadra BOOLEAN DEFAULT FALSE,
+    reasoning TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_job_strategy_concurso (validation_job_id, strategy_id, concurso),
+    INDEX idx_strategy (strategy_id),
+    INDEX idx_concurso (concurso),
+    INDEX idx_hits (hits),
+    FOREIGN KEY (validation_job_id) REFERENCES validation_jobs(id) ON DELETE CASCADE,
+    FOREIGN KEY (lottery_type_id) REFERENCES lottery_types(id) ON DELETE CASCADE,
+    FOREIGN KEY (strategy_id) REFERENCES strategies(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- STRATEGY HISTORICAL PERFORMANCE TABLE - Aggregated strategy performance
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS strategy_historical_performance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lottery_type_id INT NOT NULL,
+    strategy_id INT NOT NULL,
+    
+    -- Performance metrics
+    total_predictions INT DEFAULT 0,
+    avg_hits DECIMAL(5,2) DEFAULT 0,
+    max_hits INT DEFAULT 0,
+    
+    -- Hit distribution
+    perfect_matches INT DEFAULT 0,
+    quina_matches INT DEFAULT 0,
+    quadra_matches INT DEFAULT 0,
+    
+    -- Rates
+    hit_rate_4plus DECIMAL(5,4) DEFAULT 0,
+    
+    -- Ranking
+    overall_rank INT,
+    
+    -- Metadata
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    UNIQUE KEY unique_lottery_strategy (lottery_type_id, strategy_id),
+    INDEX idx_rank (overall_rank),
+    FOREIGN KEY (lottery_type_id) REFERENCES lottery_types(id) ON DELETE CASCADE,
+    FOREIGN KEY (strategy_id) REFERENCES strategies(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- STORED PROCEDURE: Update Strategy Performance
+-- ============================================================================
+DELIMITER //
+CREATE PROCEDURE IF NOT EXISTS update_strategy_performance(
+    IN p_lottery_type_id INT,
+    IN p_strategy_id INT
+)
+BEGIN
+    INSERT INTO strategy_historical_performance (
+        lottery_type_id, strategy_id, total_predictions, avg_hits, max_hits,
+        perfect_matches, quina_matches, quadra_matches, hit_rate_4plus
+    )
+    SELECT 
+        p_lottery_type_id,
+        p_strategy_id,
+        COUNT(*) as total_predictions,
+        AVG(hits) as avg_hits,
+        MAX(hits) as max_hits,
+        SUM(CASE WHEN hits = 6 THEN 1 ELSE 0 END) as perfect_matches,
+        SUM(CASE WHEN hits = 5 THEN 1 ELSE 0 END) as quina_matches,
+        SUM(CASE WHEN hits = 4 THEN 1 ELSE 0 END) as quadra_matches,
+        SUM(CASE WHEN hits >= 4 THEN 1 ELSE 0 END) / COUNT(*) as hit_rate_4plus
+    FROM validation_results
+    WHERE lottery_type_id = p_lottery_type_id AND strategy_id = p_strategy_id
+    ON DUPLICATE KEY UPDATE
+        total_predictions = VALUES(total_predictions),
+        avg_hits = VALUES(avg_hits),
+        max_hits = VALUES(max_hits),
+        perfect_matches = VALUES(perfect_matches),
+        quina_matches = VALUES(quina_matches),
+        quadra_matches = VALUES(quadra_matches),
+        hit_rate_4plus = VALUES(hit_rate_4plus);
+END //
+DELIMITER ;
