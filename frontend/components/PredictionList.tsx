@@ -238,10 +238,16 @@ export function PredictionList({
       }
 
       const response = await api.get(`/validation/results?${params}`);
-      // Sort by hits descending (best results first)
+      // Sort by concurso descending, then by hits descending (sena > quina > quadra)
       const sortedResults = (response.data.data || []).sort(
-        (a: ValidationResult, b: ValidationResult) =>
-          (Number(b.hits) || 0) - (Number(a.hits) || 0)
+        (a: ValidationResult, b: ValidationResult) => {
+          // First sort by concurso (most recent first)
+          const concursoDiff =
+            (Number(b.concurso) || 0) - (Number(a.concurso) || 0);
+          if (concursoDiff !== 0) return concursoDiff;
+          // Then by hits (sena first, then quina, then quadra)
+          return (Number(b.hits) || 0) - (Number(a.hits) || 0);
+        }
       );
       setResults(sortedResults);
       setTotal(response.data.pagination.total);

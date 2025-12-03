@@ -231,6 +231,48 @@ export class PredictionService {
     return [];
   }
 
+  /**
+   * Generate prediction for validation using provided historical data
+   * This is used by the validation service to test strategies
+   */
+  async generatePredictionForValidation(params: {
+    lotteryType: string;
+    strategyName: string;
+    historicalDraws: any[];
+  }): Promise<{ predictedNumbers: number[] }> {
+    const strategy = this.strategies.find(s => s.name === params.strategyName);
+    if (!strategy) {
+      throw new Error(`Strategy ${params.strategyName} not found`);
+    }
+
+    // Get lottery config
+    const config = this.getLotteryConfig(params.lotteryType);
+
+    // Parse historical draws
+    const parsedDraws = params.historicalDraws.map(draw => ({
+      ...draw,
+      numbers: typeof draw.numbers === 'string' ? JSON.parse(draw.numbers) : draw.numbers,
+    }));
+
+    // Generate prediction using the strategy
+    const predictedNumbers = await strategy.predict(parsedDraws, config);
+
+    return { predictedNumbers };
+  }
+
+  private getLotteryConfig(lotteryType: string) {
+    const configs: Record<string, { numbersToDraw: number; maxNumber: number; minNumber: number }> = {
+      megasena: { numbersToDraw: 6, maxNumber: 60, minNumber: 1 },
+      quina: { numbersToDraw: 5, maxNumber: 80, minNumber: 1 },
+      lotofacil: { numbersToDraw: 15, maxNumber: 25, minNumber: 1 },
+      lotomania: { numbersToDraw: 20, maxNumber: 100, minNumber: 1 },
+      duplasena: { numbersToDraw: 6, maxNumber: 50, minNumber: 1 },
+      timemania: { numbersToDraw: 7, maxNumber: 80, minNumber: 1 },
+      diadesorte: { numbersToDraw: 7, maxNumber: 31, minNumber: 1 },
+    };
+    return configs[lotteryType] || configs.megasena;
+  }
+
   private async fetchHistoricalDraws(lotteryType: string): Promise<any[]> {
     try {
       const lotteryServiceUrl = process.env.LOTTERY_SERVICE_URL || 'http://lottery-service:3001';

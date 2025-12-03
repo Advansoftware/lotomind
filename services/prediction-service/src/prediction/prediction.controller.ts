@@ -18,6 +18,12 @@ class BacktestDto {
   testSize?: number;
 }
 
+class GenerateForValidationDto {
+  lotteryType: string;
+  strategyName: string;
+  historicalDraws: any[];
+}
+
 @ApiTags('predictions')
 @Controller('predictions')
 export class PredictionController {
@@ -76,6 +82,19 @@ export class PredictionController {
     @Body() body: { lotteryType: string; testSize?: number }
   ) {
     return await this.predictionService.runBacktestAll(body);
+  }
+
+  @Post('generate-for-validation')
+  @ApiOperation({
+    summary: 'Generate prediction for validation',
+    description: 'Generate prediction using provided historical data (used by validation service)'
+  })
+  @ApiBody({ type: GenerateForValidationDto })
+  @ApiResponse({ status: 201, description: 'Prediction generated' })
+  async generateForValidation(
+    @Body() body: { lotteryType: string; strategyName: string; historicalDraws: any[] }
+  ) {
+    return await this.predictionService.generatePredictionForValidation(body);
   }
 
   @Get('strategies')

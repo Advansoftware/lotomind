@@ -313,7 +313,7 @@ export function StrategyRanking({
     try {
       setLoading(true);
       const response = await api.get(
-        `/predictions/validation/strategy-ranking?lotteryType=${lotteryType}`
+        `/validation/strategy-ranking?lotteryType=${lotteryType}`
       );
       // Sort by score descending (best strategies first)
       const sortedStrategies = (response.data || []).sort(
