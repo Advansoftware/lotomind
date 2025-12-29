@@ -413,7 +413,7 @@ export class StatisticalClosureService {
 
     // Buscar dados históricos
     const draws = await this.dataSource.query(`
-      SELECT numbers, draw_date, concurso_number
+      SELECT numbers, draw_date, concurso
       FROM draws
       WHERE lottery_type_id = ?
       ORDER BY draw_date DESC
@@ -472,7 +472,7 @@ export class StatisticalClosureService {
 
     // Buscar histórico
     const draws = await this.dataSource.query(`
-      SELECT numbers, draw_date, concurso_number
+      SELECT numbers, draw_date, concurso
       FROM draws
       WHERE lottery_type_id = ?
       ORDER BY draw_date DESC
@@ -534,7 +534,7 @@ export class StatisticalClosureService {
   }> {
     // Buscar histórico
     const draws = await this.dataSource.query(`
-      SELECT numbers, draw_date, concurso_number
+      SELECT numbers, draw_date, concurso
       FROM draws
       WHERE lottery_type_id = ?
       ORDER BY draw_date DESC

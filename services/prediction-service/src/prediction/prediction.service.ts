@@ -25,6 +25,10 @@ import { KMeansClusteringStrategy } from '../strategies/kmeans-clustering.strate
 import { NeuralNetworkStrategy } from '../strategies/neural-network.strategy';
 import { CycleDetectionStrategy } from '../strategies/cycle-detection.strategy';
 import { AdaptiveHybridStrategy } from '../strategies/adaptive-hybrid.strategy';
+// New ML Strategies
+import { LSTMStrategy } from '../strategies/lstm-deep.strategy';
+import { GradientBoostingStrategy } from '../strategies/gradient-boosting.strategy';
+import { WeightedEnsembleStrategy } from '../strategies/weighted-ensemble.strategy';
 
 @Injectable()
 export class PredictionService {
@@ -56,6 +60,10 @@ export class PredictionService {
     private neuralNetworkStrategy: NeuralNetworkStrategy,
     private cycleDetectionStrategy: CycleDetectionStrategy,
     private adaptiveHybridStrategy: AdaptiveHybridStrategy,
+    // New ML Strategies
+    private lstmStrategy: LSTMStrategy,
+    private gradientBoostingStrategy: GradientBoostingStrategy,
+    private weightedEnsembleStrategy: WeightedEnsembleStrategy,
   ) {
     this.strategies = [
       this.frequencyStrategy,
@@ -78,6 +86,10 @@ export class PredictionService {
       this.neuralNetworkStrategy,
       this.cycleDetectionStrategy,
       this.adaptiveHybridStrategy,
+      // New ML Strategies
+      this.lstmStrategy,
+      this.gradientBoostingStrategy,
+      this.weightedEnsembleStrategy,
     ];
   }
 

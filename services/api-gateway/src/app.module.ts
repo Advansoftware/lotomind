@@ -8,7 +8,11 @@ import { AppService } from './app.service';
 import { ProxyModule } from './proxy/proxy.module';
 import { AuthModule } from './auth/auth.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { BolaoModule } from './bolao/bolao.module';
 import { User } from './auth/entities/user.entity';
+import { Bolao } from './bolao/entities/bolao.entity';
+import { BolaoParticipant } from './bolao/entities/bolao-participant.entity';
+import { BolaoGame } from './bolao/entities/bolao-game.entity';
 
 @Module({
   imports: [
@@ -19,7 +23,7 @@ import { User } from './auth/entities/user.entity';
       username: process.env.DB_USERNAME || 'lotomind',
       password: process.env.DB_PASSWORD || 'lotomind123',
       database: process.env.DB_DATABASE || 'lotomind',
-      entities: [User],
+      entities: [User, Bolao, BolaoParticipant, BolaoGame],
       synchronize: false,
       logging: process.env.NODE_ENV !== 'production',
     }),
@@ -46,8 +50,10 @@ import { User } from './auth/entities/user.entity';
     ProxyModule,
     AuthModule,
     WebsocketModule,
+    BolaoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule { }
+

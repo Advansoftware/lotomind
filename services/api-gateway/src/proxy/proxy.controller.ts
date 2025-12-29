@@ -125,4 +125,52 @@ export class ProxyController {
       true,
     );
   }
+
+  // Analysis routes - base path (ML Analysis)
+  @All('analysis')
+  async proxyAnalysisBase(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/analysis',
+      true,
+    );
+  }
+
+  // Analysis routes - with subpaths
+  @All('analysis/*')
+  async proxyAnalysis(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/analysis',
+      true,
+    );
+  }
+
+  // Closure routes - base path (Statistical Closure)
+  @All('closure')
+  async proxyClosureBase(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/closure',
+      true,
+    );
+  }
+
+  // Closure routes - with subpaths
+  @All('closure/*')
+  async proxyClosure(@Req() req: Request, @Res() res: Response) {
+    return this.proxyService.proxyRequest(
+      req,
+      res,
+      process.env.PREDICTION_SERVICE_URL || 'http://prediction-service:3002',
+      '/closure',
+      true,
+    );
+  }
 }

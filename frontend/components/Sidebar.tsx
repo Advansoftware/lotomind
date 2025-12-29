@@ -21,6 +21,7 @@ import {
 import CasinoIcon from "@mui/icons-material/Casino";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import CelebrationIcon from "@mui/icons-material/Celebration";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { ALL_LOTTERIES, getLotteryTheme } from "@/lib/lottery-config";
 
@@ -186,6 +187,76 @@ export function Sidebar() {
               </ListItem>
             );
           })}
+        </List>
+
+        {/* Mega da Virada Section */}
+        <Divider sx={{ my: 2 }} />
+        <Typography
+          variant="overline"
+          fontWeight="bold"
+          color="text.secondary"
+          sx={{
+            px: 1.5,
+            mb: 1,
+            display: "block",
+            fontSize: "0.65rem",
+            letterSpacing: 1.5,
+          }}
+        >
+          ESPECIAL
+        </Typography>
+        <List sx={{ p: 0 }}>
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={() => {
+                router.push("/bolao");
+                if (isMobile) setMobileOpen(false);
+              }}
+              sx={{
+                borderRadius: 2.5,
+                py: 1.5,
+                px: 2,
+                bgcolor: pathname === "/bolao" || pathname?.startsWith("/bolao/")
+                  ? "#f59e0b"
+                  : "transparent",
+                color: pathname === "/bolao" || pathname?.startsWith("/bolao/")
+                  ? "#ffffff"
+                  : "text.primary",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                  bgcolor: pathname === "/bolao" || pathname?.startsWith("/bolao/")
+                    ? "#d97706"
+                    : "#f59e0b15",
+                  transform: isMobile ? "none" : "translateX(4px)",
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 36,
+                  color: pathname === "/bolao" || pathname?.startsWith("/bolao/")
+                    ? "#ffffff"
+                    : "#f59e0b",
+                }}
+              >
+                <CelebrationIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Mega da Virada"
+                secondary="Bolão"
+                primaryTypographyProps={{
+                  fontWeight: pathname === "/bolao" || pathname?.startsWith("/bolao/") ? "700" : "500",
+                  fontSize: "0.9rem",
+                }}
+                secondaryTypographyProps={{
+                  fontSize: "0.7rem",
+                  color: pathname === "/bolao" || pathname?.startsWith("/bolao/")
+                    ? "rgba(255,255,255,0.7)"
+                    : "text.secondary",
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
         </List>
       </Box>
 
