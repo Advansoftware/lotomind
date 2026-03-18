@@ -153,4 +153,48 @@ export class BolaoService {
       totalPaid: paidGames * pricePerGame,
     };
   }
+
+  // ============ IMPORT/EXPORT ============
+
+  async importBolao(data: {
+    name: string;
+    year: number;
+    pricePerGame: number;
+    minGamesPerParticipant: number;
+    maxGamesPerParticipant: number | null;
+    participants: {
+      name: string;
+      paid: boolean;
+      games: {
+        numbers: number[];
+      }[];
+    }[];
+  }): Promise<Bolao> {
+    // Create bolao
+    const bolao = await this.create(
+      data.name,
+      data.year,
+      data.pricePerGame,
+      data.minGamesPerParticipant,
+      data.maxGamesPerParticipant || undefined
+    );
+
+    // Create participants and games
+    for (const participantData of data.participants) {
+      const participant = await this.addParticipant(bolao.id, participantData.name);
+
+      // Set paid status if true
+      if (participantData.paid) {
+        await this.togglePaid(participant.id);
+      }
+
+      // Add games
+      for (const gameData of participantData.games) {
+        await this.addGame(participant.id, gameData.numbers);
+      }
+    }
+
+    // Return complete bolao with all data
+    return this.findOne(bolao.id);
+  }
 }

@@ -147,3 +147,29 @@ export function getTotalPaid(bolao: Bolao): number {
 export function getParticipantValue(bolao: Bolao, participant: BolaoParticipant): number {
   return participant.games.length * (Number(bolao.pricePerGame) || 5);
 }
+
+// ============ IMPORT/EXPORT ============
+
+export interface BolaoImportData {
+  exportVersion: string;
+  exportedAt: string;
+  bolao: {
+    name: string;
+    year: number;
+    pricePerGame: number;
+    minGamesPerParticipant: number;
+    maxGamesPerParticipant: number | null;
+    participants: {
+      name: string;
+      paid: boolean;
+      games: {
+        numbers: number[];
+      }[];
+    }[];
+  };
+}
+
+export async function importBolao(data: BolaoImportData): Promise<Bolao> {
+  const response = await api.post('/bolao/import', data);
+  return response.data;
+}

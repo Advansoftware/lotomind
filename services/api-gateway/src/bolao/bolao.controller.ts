@@ -34,6 +34,25 @@ class UpdateGameDto {
   numbers: number[];
 }
 
+class ImportBolaoDto {
+  exportVersion: string;
+  exportedAt: string;
+  bolao: {
+    name: string;
+    year: number;
+    pricePerGame: number;
+    minGamesPerParticipant: number;
+    maxGamesPerParticipant: number | null;
+    participants: {
+      name: string;
+      paid: boolean;
+      games: {
+        numbers: number[];
+      }[];
+    }[];
+  };
+}
+
 @Controller('bolao')
 export class BolaoController {
   constructor(private readonly bolaoService: BolaoService) { }
@@ -59,6 +78,11 @@ export class BolaoController {
       dto.minGamesPerParticipant || 1,
       dto.maxGamesPerParticipant
     );
+  }
+
+  @Post('import')
+  async importBolao(@Body() dto: ImportBolaoDto) {
+    return this.bolaoService.importBolao(dto.bolao);
   }
 
   @Put(':id')

@@ -22,6 +22,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CelebrationIcon from "@mui/icons-material/Celebration";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { BolaoCard } from "@/components/BolaoCard";
+import { BolaoJsonImport } from "@/components/BolaoJsonImport";
 import { getBolaos, createBolao, deleteBolao, Bolao } from "@/lib/bolao-api";
 import { getLotteryTheme } from "@/lib/lottery-config";
 
@@ -132,25 +133,28 @@ export default function BolaoPage() {
             Gerencie seus bolões da Mega da Virada. Adicione participantes, 
             registre os jogos e exporte um PDF formatado para compartilhar.
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setDialogOpen(true)}
-            sx={{
-              bgcolor: "white",
-              color: megaTheme.colors.dark,
-              fontWeight: "bold",
-              px: 4,
-              py: 1.5,
-              borderRadius: 3,
-              "&:hover": {
-                bgcolor: "rgba(255,255,255,0.9)",
-                transform: "translateY(-2px)",
-              },
-            }}
-          >
-            Novo Bolão
-          </Button>
+          <Box display="flex" gap={2} flexWrap="wrap">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setDialogOpen(true)}
+              sx={{
+                bgcolor: "white",
+                color: megaTheme.colors.dark,
+                fontWeight: "bold",
+                px: 4,
+                py: 1.5,
+                borderRadius: 3,
+                "&:hover": {
+                  bgcolor: "rgba(255,255,255,0.9)",
+                  transform: "translateY(-2px)",
+                },
+              }}
+            >
+              Novo Bolão
+            </Button>
+            <BolaoJsonImport onSuccess={loadBolaos} />
+          </Box>
         </Container>
       </Box>
 

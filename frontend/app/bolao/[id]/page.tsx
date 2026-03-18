@@ -27,6 +27,7 @@ import CelebrationIcon from "@mui/icons-material/Celebration";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { ParticipantSection } from "@/components/ParticipantSection";
 import { BolaoExport } from "@/components/BolaoExport";
+import { BolaoJsonExport } from "@/components/BolaoJsonExport";
 import {
   getBolao,
   addParticipant,
@@ -318,6 +319,7 @@ export default function BolaoDetailPage() {
               Adicionar Participante
             </Button>
             <BolaoExport bolao={bolao} />
+            <BolaoJsonExport bolao={bolao} />
           </Box>
         </Container>
       </Box>
