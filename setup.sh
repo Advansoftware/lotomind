@@ -85,7 +85,7 @@ fi
 
 # Start Docker Compose
 print_info "Starting Docker Compose services..."
-docker-compose up -d
+docker compose up -d
 
 # Wait for services to be healthy
 print_info "Waiting for services to be healthy..."
